@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Annotated
+from urllib.parse import urlencode
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
@@ -25,8 +26,10 @@ def create_app(settings=None, client=None):
     templates = Jinja2Templates(directory=HERE / "templates")
 
     def page(request, name, **context):
+        query = request.query_params.get("q", "")
         return templates.TemplateResponse(request=request, name=name, context={
-            "directory_status": directory.status, "lookback": settings.lookback_hours, **context,
+            "directory_status": directory.status, "lookback": settings.lookback_hours,
+            "search_url": "/?" + urlencode({"q": query}) if query else "/", **context,
         })
 
     def lookup(key):

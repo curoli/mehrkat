@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% block content %}
-<a href="/">← Choose another listing</a>
+<a href="{{ search_url }}">← Choose another listing</a>
 <p class="eyebrow">{{ listing.exchange }} · {{ listing.ticker }}</p><h1>{{ listing.name }}</h1>
-<dl>{% for label, value in [("Country", listing.country), ("Asset type", listing.asset_type), ("Sector", listing.sector), ("Aliases", listing.aliases|join(", ")), ("ISIN", listing.isin)] %}
+<dl>{% for label, value in [("Exchange", listing.exchange), ("Country", listing.country), ("Asset type", listing.asset_type), ("Sector", listing.sector), ("Aliases", listing.aliases|join(", ")), ("ISIN", listing.isin)] %}
 <dt>{{ label }}</dt><dd>{{ value or "Not available" }}</dd>{% endfor %}</dl>
 <form id="summary-form" data-key="{{ listing.listing_key }}">
 <label for="hours">Requested news window</label>
