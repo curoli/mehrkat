@@ -112,3 +112,10 @@ Evidence & coverage uses application-owned discovery/retrieval limitations once,
 deduplicated across case/whitespace variations. Model-written limitations remain
 in the API's briefing and the Debug page, rather than repeating generic coverage
 warnings in the result section.
+
+Robots matching uses [Protego](https://github.com/scrapy/protego) for wildcard
+rules, end anchors and longest-match precedence (allow wins an equal-length tie).
+The application still handles robots HTTP failures and redirects conservatively
+and skips publishers requiring request pacing. The article cache version changes
+with this parser correction so entries obtained under the earlier parser are
+not reused.

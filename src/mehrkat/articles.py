@@ -9,8 +9,8 @@ from datetime import datetime, timezone
 from time import monotonic
 from typing import Literal
 from urllib.parse import quote, urljoin, urlsplit
-from urllib.robotparser import RobotFileParser
 
+from protego import Protego
 from pydantic import BaseModel
 from trafilatura import extract
 from trafilatura.settings import use_config
@@ -18,7 +18,7 @@ from trafilatura.settings import use_config
 from .cache import content_key
 from .discovery import canonical_url
 
-VERSION = "article-v1"
+VERSION = "article-v2-robots"
 USER_AGENT = "Mehrkat/0.1"
 MAX_BYTES = 2_000_000
 MAX_TEXT = 30_000
@@ -107,11 +107,10 @@ def robots_allowed(url, deadline):
     if status != 200:
         # Fail closed on unavailable robots or redirects; no access workarounds.
         return False
-    parser = RobotFileParser()
-    parser.parse(body.decode("utf-8", errors="replace").splitlines())
+    parser = Protego.parse(body.decode("utf-8", errors="replace"))
     if parser.crawl_delay(USER_AGENT) or parser.request_rate(USER_AGENT):
         return False  # This small retriever does not implement publisher pacing.
-    return parser.can_fetch(USER_AGENT, url)
+    return parser.can_fetch(url, USER_AGENT)
 
 
 def retrieve(url):

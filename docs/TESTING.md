@@ -115,3 +115,14 @@ Combined filter/coverage verification: all 91 Python tests passed, including
 API integration tests outside the sandbox. The Node.js search regression file,
 JavaScript syntax and diff checks passed. No paid calls or graphical browser
 checks were made for the coverage changes.
+
+Robots parser regressions cover wildcard disallows, longest-match precedence
+regardless of directive order, longer allow exceptions, equal-length allow ties,
+end anchors and pacing directives. Retrieval-level tests prove both reported
+disallow cases fetch only robots.txt, never the article, and retain search
+evidence. A cache regression checks that entries obtained using the old parser
+are not reused after the cache version change.
+
+After the robots parser fix, all 104 Python tests, the JavaScript regression
+checks and dependency consistency check passed using Protego 0.7.0. No live
+retrieval, paid API call or graphical browser check was performed for this fix.

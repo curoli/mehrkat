@@ -250,3 +250,60 @@ def test_briefing_budget_does_not_discard_cached_text(article_cache, evidence, m
     assert enriched.articles[1].content_status == "metadata_only"
     assert retriever.get(str(evidence.articles[1].url)).text == "A" * 500
     assert fetch.call_count == 2
+
+
+@pytest.mark.parametrize("path,rules,allowed", [
+    ("/news/story", "Disallow: /news/*", False),
+    ("/restricted/story", "Allow: /\nDisallow: /restricted/", False),
+    ("/restricted/story", "Disallow: /restricted/\nAllow: /", False),
+    ("/news/public/story", "Disallow: /news/*\nAllow: /news/public/", True),
+    ("/news/public/story", "Allow: /news/public/\nDisallow: /news/*", True),
+    ("/news/story", "Disallow: /news/story\nAllow: /news/story", True),
+    ("/report.pdf", "Disallow: /*.pdf$", False),
+    ("/report.pdf/notes", "Disallow: /*.pdf$", True),
+])
+def test_robots_wildcards_and_longest_match(monkeypatch, path, rules, allowed):
+    body = ("User-agent: *\n" + rules).encode()
+    monkeypatch.setattr(articles, "request_page", lambda *a: (200, {}, body))
+    assert articles.robots_allowed("https://example.com" + path, 1) is allowed
+
+
+@pytest.mark.parametrize("rules,path", [
+    ("Disallow: /news/*", "/news/story"),
+    ("Allow: /\nDisallow: /restricted/", "/restricted/story"),
+])
+def test_disallowed_articles_are_not_downloaded_and_use_search_fallback(
+        monkeypatch, article_cache, evidence, restore_get, rules, path):
+    requested = []
+    def request(url, deadline):
+        requested.append(url)
+        assert url == "https://example.com/robots.txt"
+        return 200, {}, ("User-agent: *\n" + rules).encode()
+    monkeypatch.setattr(articles, "request_page", request)
+    original = evidence.articles[0]
+    evidence.articles = [original.model_copy(update={"url": "https://example.com" + path})]
+    retriever = ArticleRetriever(article_cache)
+    result = retriever.enrich(evidence)
+    assert requested == ["https://example.com/robots.txt"]
+    assert result.articles[0].evidence_text == original.evidence_text
+    assert result.articles[0].content_status == "search_evidence"
+    assert "Robots policy" in result.articles[0].retrieval_note
+
+
+def test_old_parser_cache_entries_are_not_reused(article_cache, restore_get):
+    url = "https://example.com/news/story"
+    old_result = ArticleText(text="Previously cached article", status="article_text", note="Test",
+                             retrieved_at=datetime.now(timezone.utc))
+    article_cache.put("article:" + content_key([url, "article-v1"]),
+                      old_result.model_dump(mode="json"), 86400)
+    denied = ArticleText(note="Robots policy disallows retrieval.", retrieved_at=datetime.now(timezone.utc))
+    fetch = Mock(return_value=denied)
+    assert not ArticleRetriever(article_cache, fetch=fetch).get(url).text
+    fetch.assert_called_once_with(url)
+
+
+@pytest.mark.parametrize("directive", ["Crawl-delay: 0.5", "Request-rate: 10/1m"])
+def test_protego_preserves_pacing_fallback(monkeypatch, directive):
+    body = ("User-agent: Mehrkat\n" + directive).encode()
+    monkeypatch.setattr(articles, "request_page", lambda *a: (200, {}, body))
+    assert not articles.robots_allowed("https://example.com/news", 1)
