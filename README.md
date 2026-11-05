@@ -1,8 +1,8 @@
 # mehrkat
 
 AI-powered stock news summaries. Find a company or ticker, select a listing,
-then generate a cited news briefing. The app attempts article-text retrieval
-and falls back to cited search findings when retrieval fails.
+optionally filter by exchange, country or sector, then generate a cited news briefing.
+The app attempts article-text retrieval and falls back to cited search findings when retrieval fails.
 
 ## Run locally
 

@@ -79,3 +79,36 @@ Trafilatura extracts article text, excluding comments. Publisher HTML and raw
 responses are not cached. Full bodies are excluded from the summary HTTP response,
 result HTML and debug page; the model and local SQLite cache receive the extracted
 text. UI/API metadata reports extraction status, retrieval time and fallback reason.
+
+
+## Optional listing filters
+
+The search page offers checkbox groups for exchanges, countries and sectors,
+populated from the directory loaded at startup. Empty groups impose no restriction.
+Multiple selections within a group are alternatives (OR); selected groups must
+all match (AND). Matching ignores case and extra whitespace. A text query can be
+combined with filters, or filters alone can browse listings. With neither text nor
+filters, results stay empty. Filtering happens before ranking and the 25-row cap.
+Missing metadata does not match a selected value.
+
+GET /api/listings accepts repeated exchange, country and sector parameters, e.g.
+`/api/listings?q=SAP&exchange=NYSE&exchange=XETRA&country=Germany`.
+Filter values and the text query travel in URLs through listing and briefing
+navigation, so return links restore the search. Clear filters retains the text
+query. These are local directory filters only; they do not restrict news sources
+or change the selected company's summarization context.
+
+## Briefing coverage statistics
+
+SummaryResult computes coverage from unique source IDs cited by developments,
+not model-generated counts. Reusing one source for several events counts once.
+The UI/API reports articles used, non-truncated article extractions, excerpts,
+search-summary fallbacks, and the total sources evaluated. Uncited extractions
+do not inflate the full-text count; insufficient-news results cite zero articles.
+“Full text extracted” means the extractor returned article text without configured
+truncation, not independently verified completeness.
+
+Evidence & coverage uses application-owned discovery/retrieval limitations once,
+deduplicated across case/whitespace variations. Model-written limitations remain
+in the API's briefing and the Debug page, rather than repeating generic coverage
+warnings in the result section.

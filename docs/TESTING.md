@@ -79,3 +79,39 @@ actual download/extraction/cache path, not complete article coverage or summary
 quality. No paid OpenAI request was made for this change, and no graphical browser
 verification was performed. The existing Starlette/httpx deprecation warning
 remains.
+
+
+## Listing filter verification
+
+Python tests cover multiple values, intersection across groups, filters without
+a text query, case/whitespace normalization, empty/unknown values, missing
+metadata, filtering before the result limit, directory-derived options, and
+filter restoration in search, listing and briefing HTML. They also check that
+filtering/navigation does not call OpenAI.
+
+Optional JavaScript regression tests use Node.js 20+ with its built-in test
+runner and DOM/fetch stubs (no npm dependencies):
+
+```sh
+node --test tests/js/search.test.cjs
+```
+
+These verify filter-only search, repeated filter parameters in listing links,
+filter changes/clearing, query restoration and briefing redirects. They do not
+replace a graphical browser check.
+
+Filter restoration regressions also exercise lowercase and whitespace-padded
+exchange/country/sector parameters on initial load and after listing/briefing
+return navigation. The canonical checked values must produce exactly the same
+API results as the original normalized request.
+
+Coverage-statistic regressions check unique cited-source counts across repeated
+citations and developments, mixed text/excerpt/search coverage, uncited sources,
+zero-use insufficient-news results, normalized warning deduplication, API/HTML
+statistics and cached responses. The combined branch also runs all restored
+filter navigation tests, including normalization on return links.
+
+Combined filter/coverage verification: all 91 Python tests passed, including
+API integration tests outside the sandbox. The Node.js search regression file,
+JavaScript syntax and diff checks passed. No paid calls or graphical browser
+checks were made for the coverage changes.
