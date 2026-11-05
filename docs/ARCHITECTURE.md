@@ -80,8 +80,8 @@ The application does not execute JavaScript.
 Trafilatura extracts article text, excluding comments. Publisher HTML and raw
 responses are not cached. Full bodies are excluded from the summary HTTP response,
 briefing HTML and debug page by default; the model and local SQLite cache receive
-the extracted text. An explicit View text used action opens the cited source's
-cached evidence on a separate page. UI/API metadata reports extraction status, retrieval time and fallback reason.
+the extracted text. An explicit (cached) link opens the cited source's cached
+evidence on a separate page. UI/API metadata reports extraction status, retrieval time and fallback reason.
 
 
 ## Optional listing filters
@@ -111,10 +111,11 @@ do not inflate the full-text count; insufficient-news results cite zero articles
 “Full text extracted” means the extractor returned article text without configured
 truncation, not independently verified completeness.
 
-Evidence & coverage uses application-owned discovery/retrieval limitations once,
-deduplicated across case/whitespace variations. Model-written limitations remain
-in the API's briefing and the Debug page, rather than repeating generic coverage
-warnings in the result section.
+The result page shows a compact count line and per-source explanations instead
+of a separate Evidence & coverage section. Counts remain available in the API.
+Each source's question-mark popup explains the actual input type, truncation or
+fallback, date uncertainty, incomplete coverage and the cached-text viewer.
+Model-written limitations remain in the API's briefing and Debug page.
 
 Robots matching uses [Protego](https://github.com/scrapy/protego) for wildcard
 rules, end anchors and longest-match precedence (allow wins an equal-length tie).
@@ -132,8 +133,12 @@ button still clears all groups. Empty groups show zero and disable their reset.
 
 ## Source list and exact evidence snapshots
 
-The result page lists unique sources cited in developments, with titles, explicit
-original URLs, publisher links, coverage labels and View text used links.
+The result page lists unique sources cited in developments in compact rows:
+the title links to the original publisher URL (using the URL as link text when
+the title is absent), followed by a (cached) evidence-view link, a short coverage
+label and a question-mark explanation button. Downloads use “full or partial
+download”; generated search findings use “search summary”. Development citations
+retain direct publisher links without repeating long coverage metadata.
 Uncited discovery candidates are excluded from this list.
 
 Successful workflows save a result snapshot containing the enriched, budget-limited
@@ -157,3 +162,11 @@ show the exact truncation supplied to the model, not a longer URL-cache version.
 Response Cache-Control: no-store prevents implicit browser retention of the text.
 The ordinary summary API, briefing page and Debug page still omit source bodies.
 This remains a local, single-user app; saved IDs are not authentication.
+
+Source explanations use native HTML auto-popovers with labelled buttons and
+dialogs, explicit Close controls, Escape/outside-click dismissal and one popup
+open at a time. They need a browser supporting the HTML Popover API; no additional
+JavaScript dependency or network request is used to show them. Explanations clarify
+untruncated versus budget-truncated extraction and search-summary fallback, retain
+the retrieval reason/time, and explain cache inspection, unverified dates and
+non-exhaustive search coverage. The (cached) evidence route is unchanged.

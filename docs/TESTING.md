@@ -149,3 +149,17 @@ All 113 Python tests passed for this change, plus the Node.js search/navigation
 regressions, JavaScript syntax, dependency consistency and diff checks. No live
 API calls or graphical browser verification were performed. The existing
 TestClient deprecation warning remains.
+
+## Compact source-list verification
+
+All 120 Python tests passed after this change. New markup regressions cover
+title/URL fallback, publisher and (cached) links, extraction/excerpt/search labels,
+source-specific explanations, escaped titles, unique accessible popup targets and
+Close controls, retained uncertainty/caching information, omission of source
+bodies, and removal of the separate Evidence & coverage section. The existing
+JavaScript regression checks and syntax/diff checks passed.
+
+A headless Chrome smoke check against rendered fictional fixture content verified
+popup opening, one-at-a-time behavior, Escape, Close, outside-click dismissal, and
+fit within a 390-pixel mobile viewport. No live article or OpenAI requests were made.
+The existing TestClient deprecation warning remains.
