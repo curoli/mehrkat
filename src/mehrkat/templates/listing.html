@@ -7,6 +7,10 @@
 <label for="hours">Requested news window</label>
 <select id="hours"><option value="{{ lookback }}">{{ lookback }} hours (default)</option><option value="24">24 hours</option><option value="168">7 days</option></select>
 <button id="generate" type="submit">Find &amp; summarize news</button>
-</form><p id="summary-status" role="status">Ready. Generation uses your OpenAI account; cached results are reused.</p>
+</form>
+<div class="summary-progress">
+<span id="summary-busy" class="busy-dots" aria-hidden="true" hidden><span></span><span></span><span></span></span>
+<p id="summary-status" role="status">Ready. Generation uses your OpenAI account; cached results are reused.</p>
+</div>
 <p class="muted">Broader discovery may take several minutes and uses more API calls on a cache miss. Coverage and publication dates may be incomplete.</p>
 {% endblock %}

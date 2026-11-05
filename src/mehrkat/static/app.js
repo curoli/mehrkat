@@ -90,13 +90,17 @@ if (form) {
     event.preventDefault();
     const button = document.querySelector("#generate");
     const status = document.querySelector("#summary-status");
+    const indicator = document.querySelector("#summary-busy");
+    let finished = false;
     button.disabled = true;
+    indicator.hidden = false;
     form.setAttribute("aria-busy", "true");
     status.textContent = "Searching for news…";
     const poll = setInterval(async () => {
       try {
         const response = await fetch("/api/status");
         const data = await response.json();
+        if (finished) return;
         if (data.phase === "retrieving") status.textContent = "Retrieving article text…";
         if (data.phase === "summarizing") status.textContent = "Evaluating relevance and writing your briefing…";
       } catch { /* The main request reports connection errors. */ }
@@ -111,13 +115,16 @@ if (form) {
       const result = await response.json();
       const params = savedSearchParams();
       params.set("briefing", result.result_id);
+      status.textContent = "Briefing ready. Opening results…";
       window.location.assign(params.toString() ? "/result?" + params : "/result");
     } catch (error) {
       status.textContent = error.message;
       button.disabled = false;
-      form.setAttribute("aria-busy", "false");
     } finally {
+      finished = true;
       clearInterval(poll);
+      indicator.hidden = true;
+      form.setAttribute("aria-busy", "false");
     }
   });
 }
