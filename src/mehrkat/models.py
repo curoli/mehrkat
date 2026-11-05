@@ -76,13 +76,18 @@ class SummaryResult(BaseModel):
     generated_at: datetime
     discovery_cached: bool
     summary_cached: bool
+    result_id: str = ""
 
+
+    @property
+    def used_sources(self) -> list[Evidence]:
+        used_ids = {source_id for event in self.briefing.developments for source_id in event.source_ids}
+        return [article for article in self.discovery.articles if article.id in used_ids]
 
     @computed_field
     @property
     def coverage(self) -> CoverageStats:
-        used_ids = {source_id for event in self.briefing.developments for source_id in event.source_ids}
-        used = [article for article in self.discovery.articles if article.id in used_ids]
+        used = self.used_sources
         return CoverageStats(
             evaluated_sources=len(self.discovery.articles),
             used_articles=len(used),

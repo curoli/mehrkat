@@ -68,7 +68,7 @@ refreshes, expiry, shorter failure caching and recovery, search fallback,
 summary input/hash changes, metadata-only sources, extraction/truncation budgets,
 robots disallow/error/pacing handling, restricted content, private-IP and mixed
 DNS blocking, redirect target checks, TLS hostname preservation with IP pinning,
-download/compression limits, and omission of article bodies from browser/API/debug
+download/compression limits, and omission of article bodies from default briefing/API/debug
 responses. No paid API calls are used by these tests.
 
 Article-text implementation verification: 77 Python tests passed on Python 3.13.
@@ -134,3 +134,18 @@ isolation, preserved query/other filters, refreshed results and listing URLs,
 and all-group reset state. All 106 Python tests, the JavaScript regression
 checks, syntax and diff checks passed for this change. No API calls or graphical
 browser checks were performed.
+
+## Source evidence viewer verification
+
+Source-view tests cover article text, excerpts and search fallbacks; unique cited
+source lists with publisher URLs; exact primary and supplementary text supplied
+to the summary; HTML escaping; preservation of search/filter state and a stable
+briefing ID; snapshot reuse across cached generations; previous evidence surviving
+new generations and process restarts; input-budget truncation; expiry; and rejection
+of unknown/uncited sources. Viewing makes no article retrieval or OpenAI call.
+Default result/API/debug responses remain free of source bodies.
+
+All 113 Python tests passed for this change, plus the Node.js search/navigation
+regressions, JavaScript syntax, dependency consistency and diff checks. No live
+API calls or graphical browser verification were performed. The existing
+TestClient deprecation warning remains.

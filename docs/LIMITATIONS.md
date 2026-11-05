@@ -23,9 +23,11 @@
   evidence should produce an honest shorter or insufficient-news result.
 - The sample covers only four listings. Imported directories can be incomplete,
   stale, or subject to restrictions; unsupported formats fall back to the sample.
-- Local single-user operation only. Latest result and status are process-wide;
-  another tab can replace the result. Do not expose this server publicly without
-  authentication, per-user state, CSRF/rate controls, and a security review.
+- Local single-user operation only. Status and the default latest-result view
+  are process-wide. Briefing/source links identify persistent snapshots and remain
+  stable across generations until expiry (at most 24 hours). Saved IDs do not
+  provide authentication. Do not expose this server publicly without per-user
+  access controls, CSRF/rate controls, and a security review.
 - One workflow runs at a time. SDK timeout is 60 seconds per request with one
   transient retry; two stages may take several minutes. A browser disconnect
   does not cancel an in-flight SDK request.
