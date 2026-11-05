@@ -11,29 +11,38 @@ Discovery: {{ "cached" if result.discovery_cached else "fresh" }} · Summary: {{
 <article><h2>{{ event.title }}</h2><p>{{ event.factual_summary }}</p>
 {% if event.possible_implications %}<p><strong>Possible implications:</strong> {{ event.possible_implications }}</p>{% endif %}
 <ul class="sources">{% for id in event.source_ids %}{% set source = sources[id] %}
-<li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title or source.url }}</a> · Publication date unknown/unverified
-<br>{{ {"article_text": "Extracted article text (completeness unverified)", "excerpt": "Extracted excerpt (truncated)", "search_evidence": "Search findings fallback", "metadata_only": "Metadata only"}[source.content_status] }}
-{% if source.retrieval_note %} · {{ source.retrieval_note }}{% endif %}
-{% if source.text_retrieved_at %}<br>Text retrieval attempted: {{ source.text_retrieved_at.isoformat() }}{% endif %}</li>
+<li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title or source.url }}</a></li>
 {% endfor %}</ul></article>{% endfor %}
 <section class="source-list" aria-labelledby="sources-title">
 <h2 id="sources-title">Sources used</h2>
 {% if result.used_sources %}
+<p class="muted">{{ result.coverage.used_articles }} sources used · {{ result.coverage.full_text_articles + result.coverage.excerpt_articles }} downloads · {{ result.coverage.search_summary_articles }} search summaries</p>
 <ul>{% for source in result.used_sources %}
-<li><strong>{{ source.title or "Untitled source" }}</strong>
-<a class="source-url" href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.url }}</a>
-<a href="/sources/{{ result.result_id }}/{{ source.id }}{{ search_suffix }}">View text used</a>
-<span class="muted"> · {{ {"article_text": "Extracted article text (completeness unverified)", "excerpt": "Extracted excerpt (truncated)", "search_evidence": "Search findings fallback", "metadata_only": "Metadata only"}[source.content_status] }}</span>
+<li>
+<a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title or source.url }}</a>
+<a class="cached-link" href="/sources/{{ result.result_id }}/{{ source.id }}{{ search_suffix }}">(cached)</a>
+<span class="muted">· {{ {"article_text": "full or partial download", "excerpt": "full or partial download", "search_evidence": "search summary", "metadata_only": "no text"}[source.content_status] }}</span>
+<button type="button" class="source-help" popovertarget="source-info-{{ loop.index }}" aria-label="Explain coverage for {{ source.title or source.url }}">?</button>
+<div id="source-info-{{ loop.index }}" class="source-info" popover="auto" role="dialog" aria-labelledby="source-info-title-{{ loop.index }}">
+<h3 id="source-info-title-{{ loop.index }}">What text was used?</h3>
+{% if source.content_status == "article_text" %}
+<p><strong>Full or partial download:</strong> We downloaded the page and extracted its article text without reaching our text-length limits. Its completeness is unverified: extraction can miss sections, content loaded through JavaScript, or content behind access restrictions.</p>
+{% elif source.content_status == "excerpt" %}
+<p><strong>Full or partial download:</strong> We extracted article text from the downloaded page, then truncated it to fit our text-length limits. Only that excerpt was supplied to the summarization model. Extraction may also miss parts of the original article.</p>
+{% elif source.content_status == "search_evidence" %}
+<p><strong>Search summary:</strong> Usable article text was unavailable or could not fit the briefing's text budget. The model received generated, cited web-search findings instead. These are not the publisher's article text. An original page may still be accessible in your browser even when retrieval fails.</p>
+{% else %}
+<p><strong>No text:</strong> Only source metadata was available; it cannot support a briefing claim.</p>
+{% endif %}
+{% if source.retrieval_note %}<p>{{ source.retrieval_note }}</p>{% endif %}
+<p>The <strong>(cached)</strong> link shows the exact evidence supplied for this source, including any truncation and supplementary search findings. Viewing it makes no new download or OpenAI request; saved text is available until its cache expires.</p>
+<p>Publication dates are unknown/unverified. Search coverage is not exhaustive, and model summaries can contain errors. Follow the source link to check the original report.</p>
+<p class="muted">Counts cover unique sources cited in this briefing, out of {{ result.coverage.evaluated_sources }} sources evaluated. {{ result.coverage.full_text_articles }} had untruncated extracted text, {{ result.coverage.excerpt_articles }} had excerpts, and {{ result.coverage.search_summary_articles }} used search summaries. Untruncated extraction does not prove complete article coverage.</p>
+{% if source.text_retrieved_at %}<p class="muted">Article retrieval attempted: {{ source.text_retrieved_at.isoformat() }}</p>{% endif %}
+<button type="button" class="secondary" popovertarget="source-info-{{ loop.index }}" popovertargetaction="hide" autofocus>Close</button>
+</div>
 </li>
 {% endfor %}</ul>
 {% else %}<p>No sources were cited in this briefing.</p>{% endif %}
 </section>
-<aside><h2>Evidence &amp; coverage</h2>
-<p><strong>Articles used: {{ result.coverage.used_articles }}</strong> ·
-Full text extracted: {{ result.coverage.full_text_articles }} ·
-Excerpts: {{ result.coverage.excerpt_articles }} ·
-Search summaries: {{ result.coverage.search_summary_articles }}</p>
-<p class="muted">Counts refer to unique sources cited in this briefing, out of {{ result.coverage.evaluated_sources }} sources evaluated.
-“Full text extracted” means article text was extracted without configured truncation; completeness is unverified.</p>
-<ul>{% for note in result.coverage_notes %}<li>{{ note }}</li>{% endfor %}</ul></aside>
 {% endblock %}

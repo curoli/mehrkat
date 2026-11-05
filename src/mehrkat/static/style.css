@@ -20,6 +20,12 @@ button.filter-reset{margin-top:10px}
 button.filter-reset:disabled{cursor:default}
 
 .source-list{border-top:1px solid #d9e1d9;padding-top:20px}
-.source-list ul{padding-left:20px}.source-list li{margin-bottom:18px}
+.source-list ul{padding-left:20px}.source-list li{margin-bottom:8px;overflow-wrap:anywhere}
 .source-url{display:block;overflow-wrap:anywhere}
 .evidence-text{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;background:white;padding:20px;border:1px solid #d9e1d9;border-radius:8px}
+
+.cached-link{white-space:nowrap;font-size:14px}
+button.source-help{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;margin-left:4px;border-radius:50%;background:white;color:#126755;font-size:14px;vertical-align:middle}
+.source-info{max-width:min(520px,calc(100vw - 32px));max-height:80vh;overflow-y:auto;padding:24px;border:1px solid #91aaa1;border-radius:10px;color:#173033;background:#fff;box-shadow:0 8px 30px #17303333}
+.source-info::backdrop{background:#17303322}
+.source-info h3{margin-top:0}.source-info p{font-size:14px}

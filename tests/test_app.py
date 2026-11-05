@@ -21,7 +21,7 @@ def test_search_select_summary_and_citations(settings, client):
     assert response.status_code == 200
     html = app.get("/result").text
     assert 'href="https://example.com/news"' in html
-    assert "Publication date unknown/unverified" in html
+    assert "Publication dates are unknown/unverified" in html
     assert "Fictional test summary" in html
     assert app.get("/debug").status_code == 200
     assert app.get("/api/summary?key=NASDAQ:AAPL").status_code == 405
@@ -79,7 +79,7 @@ def test_article_coverage_shown_without_returning_bodies(settings, client, monke
     assert "evidence_text" not in source and "search_evidence_text" not in source
     assert article_body not in response.text
     page = app.get("/result").text
-    assert "Extracted article text (completeness unverified)" in page
+    assert "full or partial download" in page
     assert article_body not in page
     assert article_body not in app.get("/debug").text
     assert article_body in client.responses.parse.call_args.kwargs["input"]
@@ -185,11 +185,10 @@ def test_result_coverage_totals_and_no_duplicate_model_caveats(settings, client,
     result.discovery.limitations = [duplicate, " coverage warning shown once "]
     result.briefing.limitations = [duplicate, "Model-specific caveat"]
     html = app.get("/result").text
-    assert html.count(duplicate) == 1
-    assert "Articles used: 1" in html
-    assert "Full text extracted: 0" in html
-    assert "Search summaries: 1" in html
-    assert "completeness is unverified" in html
+    assert duplicate not in html
+    assert "Evidence &amp; coverage" not in html
+    assert "1 sources used · 0 downloads · 1 search summaries" in html
+    assert "Untruncated extraction does not prove complete article coverage." in html
     assert "Model-specific caveat" not in html
     assert "Model-specific caveat" in app.get("/debug").text
     # Cached responses still compute the same statistics.
