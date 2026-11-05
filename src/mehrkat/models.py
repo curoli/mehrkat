@@ -23,8 +23,12 @@ class Evidence(BaseModel):
     published_at: datetime | None = None
     published_at_verified: bool = False
     retrieved_at: datetime
-    evidence_text: str
-    content_status: Literal["search_evidence", "metadata_only"]
+    evidence_text: str = ""
+    content_status: Literal["search_evidence", "metadata_only", "article_text", "excerpt"]
+    search_evidence_text: str | None = None
+    retrieval_note: str | None = None
+    text_retrieved_at: datetime | None = None
+    text_url: str | None = None
 
 
 class Discovery(BaseModel):

@@ -11,7 +11,10 @@ Discovery: {{ "cached" if result.discovery_cached else "fresh" }} · Summary: {{
 <article><h2>{{ event.title }}</h2><p>{{ event.factual_summary }}</p>
 {% if event.possible_implications %}<p><strong>Possible implications:</strong> {{ event.possible_implications }}</p>{% endif %}
 <ul class="sources">{% for id in event.source_ids %}{% set source = sources[id] %}
-<li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title or source.url }}</a> · Publication date unknown/unverified</li>
+<li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title or source.url }}</a> · Publication date unknown/unverified
+<br>{{ {"article_text": "Extracted article text (completeness unverified)", "excerpt": "Extracted excerpt (truncated)", "search_evidence": "Search findings fallback", "metadata_only": "Metadata only"}[source.content_status] }}
+{% if source.retrieval_note %} · {{ source.retrieval_note }}{% endif %}
+{% if source.text_retrieved_at %}<br>Text retrieval attempted: {{ source.text_retrieved_at.isoformat() }}{% endif %}</li>
 {% endfor %}</ul></article>{% endfor %}
 <aside><h2>Evidence &amp; coverage</h2><ul>{% for note in result.discovery.limitations + result.briefing.limitations %}<li>{{ note }}</li>{% endfor %}</ul></aside>
 {% endblock %}

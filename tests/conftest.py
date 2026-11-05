@@ -56,3 +56,13 @@ def client(response_data, briefing):
     client.responses.create.return_value = Mock(model_dump=lambda: response_data)
     client.responses.parse.return_value = SimpleNamespace(status="completed", output_parsed=briefing)
     return client
+
+
+@pytest.fixture(autouse=True)
+def no_article_network(monkeypatch):
+    # Existing workflow tests keep their search-only fixtures. Article retrieval
+    # tests inject their own HTTP/extractor fakes explicitly.
+    from mehrkat.articles import ArticleRetriever, ArticleText
+    monkeypatch.setattr(ArticleRetriever, "get", lambda self, url: ArticleText(
+        note="Fixture retrieval unavailable", retrieved_at=datetime(2026, 1, 1, tzinfo=timezone.utc)
+    ))

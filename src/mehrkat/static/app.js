@@ -59,6 +59,7 @@ if (form) {
       try {
         const response = await fetch("/api/status");
         const data = await response.json();
+        if (data.phase === "retrieving") status.textContent = "Retrieving article text…";
         if (data.phase === "summarizing") status.textContent = "Evaluating relevance and writing your briefing…";
       } catch { /* The main request reports connection errors. */ }
     }, 1500);

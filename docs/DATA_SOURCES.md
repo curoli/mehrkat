@@ -36,17 +36,30 @@ ISIN. Sample curation date: 2026-11-05.
 ## News
 
 OpenAI web search supplies consulted sources and model-written cited claims.
-Not every consulted URL is a usable news article. Only citation-associated
-evidence may support a development; metadata-only sources remain visible in
-debug. We never fetch publisher pages, bypass restrictions, or assert full-text
-coverage. Dates remain unknown/unverified. Search's requested interval is
+Not every consulted URL is a usable news article. The app attempts to fetch
+and extract public HTML at source URLs, checking robots rules at each redirect.
+A missing robots file (404) permits an attempt; errors, disallow rules, or explicit
+pacing requirements cause fallback. Explicit non-free-access metadata and common
+subscription/consent gates also cause fallback. No restrictions are bypassed, and
+we do not assert complete article coverage. Only actual extracted text or
+citation-associated search findings can support a development; metadata-only
+sources remain visible in debug. Dates remain unknown/unverified. Search's requested interval is
 guidance, not a guaranteed hard filter. News may be incomplete or outdated.
 
-SQLite retains short generated evidence and attribution links locally; publisher
-rights still apply. Do not redistribute full copyrighted texts or interpret the
+SQLite retains generated search evidence, extracted article text and attribution
+locally with configurable expiry (one day for article text by default). Expired
+entries are inaccessible and pruned on subsequent writes. Publisher rights still
+apply; robots permission is not a license or confirmation that publisher terms
+permit every use. Review relevant source terms before using or redistributing
+content. Retrieval is limited to public pages without authentication. Do not redistribute full copyrighted texts or interpret the
 code's MIT license as licensing third-party news. Cache can be deleted while the
 app is stopped by removing .cache/mehrkat.sqlite.
 
 The importer was verified on 2026-11-05 against the upstream main CSV and loaded
 74,800 stock rows locally. This is a retrieval observation, not a coverage or
 licensing guarantee; the generated provenance file is kept with that download.
+
+Extraction uses [Trafilatura](https://trafilatura.readthedocs.io/en/latest/corefunctions.html).
+Text, including cached text, may still be incomplete or erroneous. Long articles
+are explicitly truncated; PDFs, JavaScript-rendered pages, unsupported compression,
+and blocked/unavailable URLs fall back to search evidence. Raw HTML is discarded.

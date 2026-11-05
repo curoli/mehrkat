@@ -50,7 +50,8 @@ def create_app(settings=None, client=None):
     def listing(request: Request, key: str):
         return page(request, "listing.html", listing=lookup(key))
 
-    @app.post("/api/summary", response_model=SummaryResult)
+    @app.post("/api/summary", response_model=SummaryResult,
+              response_model_exclude={"discovery": {"articles": {"__all__": {"evidence_text", "search_evidence_text"}}}})
     def summary(key: str, hours: Annotated[int | None, Query(ge=1, le=168)] = None):
         listing = lookup(key)
         try:
@@ -94,8 +95,9 @@ def create_app(settings=None, client=None):
             "Discovery model": settings.discovery_model, "Summary model": settings.summary_model,
             "Default lookback (hours)": settings.lookback_hours,
             "Discovery TTL (seconds)": settings.discovery_ttl,
+            "Article text TTL (seconds)": settings.article_ttl,
             "Directory": directory.status,
-        }, note="Configure OPENAI_API_KEY, OPENAI_DISCOVERY_MODEL, OPENAI_SUMMARY_MODEL, NEWS_LOOKBACK_HOURS, DISCOVERY_CACHE_TTL_SECONDS, LISTINGS_PATH and CACHE_PATH in the environment or .env, then restart.")
+        }, note="Configure OPENAI_API_KEY, OPENAI_DISCOVERY_MODEL, OPENAI_SUMMARY_MODEL, NEWS_LOOKBACK_HOURS, DISCOVERY_CACHE_TTL_SECONDS, ARTICLE_CACHE_TTL_SECONDS, LISTINGS_PATH and CACHE_PATH in the environment or .env, then restart.")
 
     @app.get("/monitoring", response_class=HTMLResponse)
     def monitoring(request: Request):
@@ -109,7 +111,7 @@ def create_app(settings=None, client=None):
         if last:
             for article in last.discovery.articles:
                 decision = next((r for r in last.briefing.relevance if r.article_id == article.id), None)
-                values[article.id] = f"{article.url} | {article.content_status} | publication date unverified | {decision.category if decision else 'not assessed'}: {decision.reason if decision else ''}"
+                values[article.id] = f"{article.url} | {article.content_status} | publication date unverified | {decision.category if decision else 'not assessed'}: {decision.reason if decision else ''} | {article.retrieval_note or 'not attempted'}"
         return page(request, "info.html", title="Debug", values=values,
                     note="Latest process-local result only. No full article texts or credentials are shown.")
 

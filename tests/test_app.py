@@ -60,3 +60,26 @@ def test_concurrent_request_is_bounded(settings, client):
         client.responses.create.assert_not_called()
     finally:
         application.state.service.lock.release()
+
+
+def test_article_coverage_shown_without_returning_bodies(settings, client, monkeypatch):
+    from datetime import datetime, timezone
+    from mehrkat.articles import ArticleRetriever, ArticleText
+    article_body = "Publisher article body for internal analysis only. " * 10
+    monkeypatch.setattr(ArticleRetriever, "get", lambda self, url: ArticleText(
+        text=article_body, status="article_text", note="Extracted article text; completeness unverified.",
+        retrieved_at=datetime.now(timezone.utc), final_url=url,
+    ))
+    application = create_app(settings, client)
+    app = TestClient(application)
+    response = app.post("/api/summary?key=NASDAQ:AAPL")
+    assert response.status_code == 200
+    source = response.json()["discovery"]["articles"][0]
+    assert source["content_status"] == "article_text"
+    assert "evidence_text" not in source and "search_evidence_text" not in source
+    assert article_body not in response.text
+    page = app.get("/result").text
+    assert "Extracted article text (completeness unverified)" in page
+    assert article_body not in page
+    assert article_body not in app.get("/debug").text
+    assert article_body in client.responses.parse.call_args.kwargs["input"]

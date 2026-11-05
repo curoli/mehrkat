@@ -55,3 +55,27 @@ separator, spaces, tabs or a single newline. They also verify that new claim tex
 or a blank paragraph prevents evidence inheritance, and that all supporting IDs
 pass summary validation. The full 39-test suite, including API integration tests,
 passed outside the sandbox after this fix.
+
+## Article retrieval tests
+
+The original workflow fixtures stub ArticleRetriever.get to a deterministic
+unavailable result; they never access publisher URLs. Retrieval tests use fake
+HTTP responses/sockets and invented article HTML. One extraction test runs the
+real Trafilatura parser against that local fixture.
+
+Coverage includes canonical URL cache reuse across instances and discovery
+refreshes, expiry, shorter failure caching and recovery, search fallback,
+summary input/hash changes, metadata-only sources, extraction/truncation budgets,
+robots disallow/error/pacing handling, restricted content, private-IP and mixed
+DNS blocking, redirect target checks, TLS hostname preservation with IP pinning,
+download/compression limits, and omission of article bodies from browser/API/debug
+responses. No paid API calls are used by these tests.
+
+Article-text implementation verification: 77 Python tests passed on Python 3.13.
+JavaScript syntax and dependency consistency checks passed. A live, key-free
+retrieval of an Apple Newsroom earnings release extracted 2,785 characters;
+a repeated lookup used the local URL cache (one fetch total). This verifies an
+actual download/extraction/cache path, not complete article coverage or summary
+quality. No paid OpenAI request was made for this change, and no graphical browser
+verification was performed. The existing Starlette/httpx deprecation warning
+remains.
