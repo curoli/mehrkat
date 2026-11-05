@@ -35,7 +35,8 @@ Only HTTP(S) links without embedded credentials are accepted.
 ## Caches
 
 SQLite stores JSON and expiry. Discovery keys hash canonical listing metadata,
-lookback hours, discovery model/prompt version, context size and tool budget.
+lookback hours, discovery model/prompt version, context size, output/tool budgets,
+maximum candidate sources and maximum search passes.
 A cache hit retains the original requested UTC window; it does not pretend to
 refresh it. Default TTL: 900 seconds. Summary keys hash exact serialized enriched
 evidence, listing metadata, summary model and English prompt/schema version.
@@ -170,3 +171,34 @@ JavaScript dependency or network request is used to show them. Explanations clar
 untruncated versus budget-truncated extraction and search-summary fallback, retain
 the retrieval reason/time, and explain cache inspection, unverified dates and
 non-exhaustive search coverage. The (cached) evidence route is unchanged.
+
+## Broader news discovery
+
+Discovery defaults to up to three complementary Responses requests: broad company
+news/primary announcements, additional independent financial/operational reporting,
+and supported regulatory/sector/supplier/competitor news. Each requests article-by-
+article cited findings instead of a three-to-five-event summary, and asks for new
+URLs beyond those already found. A fourth international/regional focus is available
+when configured.
+
+NEWS_MAX_ARTICLES defaults to 20 (bounded 1–40); DISCOVERY_SEARCH_PASSES defaults to
+3 (bounded 1–4). Each pass uses high search context, at most two web-search tool
+calls, and at most 6,000 output tokens. Search stops early once the candidate target
+has that many citation-backed records. Consulted-source metadata alone does not
+trigger early stopping. Across passes, canonical URLs are merged, evidence is
+preserved/combined, and citation-backed findings are prioritized before filling
+remaining slots with consulted sources. No more than the configured cap proceeds
+to article retrieval and summary evaluation.
+
+This increases cost and latency on cache misses: the default permits three
+discovery API requests (up to six search tool calls) plus one summary request,
+before the SDK's existing bounded retry behavior. The aggregate discovery result
+is cached as before; budget changes invalidate that cache. A failing pass surfaces
+an error, so a later failed pass can require earlier searches to be repeated.
+Article URL caches, four-retrieval concurrency and text budgets remain unchanged.
+
+The summary still groups sources into roughly 3–5 developments in one page.
+Corroborating relevant sources may share a development; irrelevant or uncertain
+sources are not cited to inflate the count. The UI shows sources evaluated versus
+sources cited, including zero-citation outcomes. These are candidate sources, not
+a guarantee of 20 eligible recent articles, exhaustive coverage, or 20 citations.

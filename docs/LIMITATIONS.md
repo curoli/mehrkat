@@ -1,5 +1,9 @@
 # Limitations
 
+- Discovery targets up to 20 candidate sources with three search passes by
+  default, but actual recent-news availability and model/search behavior can
+  yield fewer. Broader discovery does not guarantee a larger final citation
+  count: relevance and event grouping still determine what is used.
 - Web search is not exhaustive, and may find older articles. Publication dates are
   not independently verified; the UI marks all as unknown/unverified.
 - Retrieval attempts public article HTML but extraction completeness is unverified.
@@ -29,7 +33,8 @@
   provide authentication. Do not expose this server publicly without per-user
   access controls, CSRF/rate controls, and a security review.
 - One workflow runs at a time. SDK timeout is 60 seconds per request with one
-  transient retry; two stages may take several minutes. A browser disconnect
+  transient retry; discovery can make up to three requests by default before the
+  summary request. A cache miss may take several minutes and incur more API cost. A browser disconnect
   does not cancel an in-flight SDK request.
 - No portfolio management, price predictions, investment recommendations,
   background ingestion, or unrestricted full-site crawling.

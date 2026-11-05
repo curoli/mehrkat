@@ -158,6 +158,7 @@ def test_no_cited_sources_gives_empty_list_and_no_text_access(settings, client, 
     result = app.post("/api/summary?key=NASDAQ:AAPL").json()
     page = app.get("/result", params={"briefing": result["result_id"]})
     assert "No sources were cited in this briefing." in page.text
+    assert "0 sources cited · 2 evaluated" in page.text
     assert not any(link.startswith("/sources/") for link in SourcePage(page.text).links)
     article = result["discovery"]["articles"][0]
     assert app.get(f"/sources/{result['result_id']}/{article['id']}").status_code == 404

@@ -187,7 +187,7 @@ def test_result_coverage_totals_and_no_duplicate_model_caveats(settings, client,
     html = app.get("/result").text
     assert duplicate not in html
     assert "Evidence &amp; coverage" not in html
-    assert "1 sources used · 0 downloads · 1 search summaries" in html
+    assert "1 sources cited · 2 evaluated · 0 downloads · 1 search summaries" in html
     assert "Untruncated extraction does not prove complete article coverage." in html
     assert "Model-specific caveat" not in html
     assert "Model-specific caveat" in app.get("/debug").text

@@ -15,8 +15,8 @@ Discovery: {{ "cached" if result.discovery_cached else "fresh" }} · Summary: {{
 {% endfor %}</ul></article>{% endfor %}
 <section class="source-list" aria-labelledby="sources-title">
 <h2 id="sources-title">Sources used</h2>
+<p class="muted">{{ result.coverage.used_articles }} sources cited · {{ result.coverage.evaluated_sources }} evaluated · {{ result.coverage.full_text_articles + result.coverage.excerpt_articles }} downloads · {{ result.coverage.search_summary_articles }} search summaries</p>
 {% if result.used_sources %}
-<p class="muted">{{ result.coverage.used_articles }} sources used · {{ result.coverage.full_text_articles + result.coverage.excerpt_articles }} downloads · {{ result.coverage.search_summary_articles }} search summaries</p>
 <ul>{% for source in result.used_sources %}
 <li>
 <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title or source.url }}</a>

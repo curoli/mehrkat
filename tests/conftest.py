@@ -12,7 +12,10 @@ from mehrkat.models import StockBriefing
 
 @pytest.fixture
 def settings(tmp_path):
-    return Settings(cache_path=tmp_path / "cache.sqlite", listings_path=tmp_path / "absent.csv")
+    # Most workflow fixtures isolate a single search pass; broader discovery
+    # has dedicated multi-response and cache-configuration tests.
+    return Settings(cache_path=tmp_path / "cache.sqlite", listings_path=tmp_path / "absent.csv",
+                    discovery_search_passes=1)
 
 
 @pytest.fixture
