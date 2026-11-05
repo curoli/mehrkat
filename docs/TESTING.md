@@ -32,7 +32,7 @@ Live verification results are recorded below when performed.
 
 ## Verification in this implementation session
 
-- 33 deterministic tests passed on Python 3.13.5 with OpenAI SDK 2.54.0.
+- 39 deterministic tests passed on Python 3.13.5 with OpenAI SDK 2.54.0.
   TestClient required running outside this environment's sandbox; the sandboxed
   run stalled in its event loop. No test made a real API request.
 - Dependency consistency check passed. Starlette emitted a deprecation warning
@@ -49,3 +49,9 @@ To repeat the explicit billable smoke check after resolving access:
 `python scripts/smoke.py`. It performs at most one request per stage with retries
 disabled, or uses cached results; it prints counts/cache flags, never keys or
 provider payloads.
+
+Adjacent-citation regressions cover three sources supporting one claim with no
+separator, spaces, tabs or a single newline. They also verify that new claim text
+or a blank paragraph prevents evidence inheritance, and that all supporting IDs
+pass summary validation. The full 39-test suite, including API integration tests,
+passed outside the sandbox after this fix.

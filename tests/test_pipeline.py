@@ -5,6 +5,7 @@ import pytest
 
 from mehrkat import discovery, summarization
 from mehrkat.listings import SAMPLE
+from mehrkat.models import RelevanceDecision
 
 
 def test_native_sources_and_unknown_dates(evidence):
@@ -73,3 +74,48 @@ def test_empty_evidence_insufficient(client, evidence, briefing):
     briefing.insufficient_news = True
     result = summarization.summarize(client, "test-model", SAMPLE[0], evidence)
     assert result.insufficient_news and not result.developments
+
+
+@pytest.mark.parametrize("separator", ["", " ", "\t", "\n"])
+def test_adjacent_citations_share_evidence(response_data, briefing, separator):
+    part = response_data["output"][1]["content"][0]
+    claim = part["text"][:part["annotations"][0]["start_index"]].strip()
+    # Three sources exercise propagation across an entire citation cluster.
+    for marker, url in [("[2]", "https://example.com/metadata"), ("[3]", "https://example.com/third")]:
+        part["text"] += separator
+        start = len(part["text"])
+        part["text"] += marker
+        part["annotations"].append({
+            "type": "url_citation", "url": url, "title": "Supporting source",
+            "start_index": start, "end_index": len(part["text"]),
+        })
+    now = datetime.now(timezone.utc)
+    evidence = discovery.extract_discovery(Mock(model_dump=lambda: response_data), SAMPLE[0], now, now)
+    assert len(evidence.articles) == 3
+    assert all(a.evidence_text == claim for a in evidence.articles)
+    assert all(a.content_status == "search_evidence" for a in evidence.articles)
+    briefing.developments[0].source_ids = [a.id for a in evidence.articles]
+    briefing.relevance = [
+        RelevanceDecision(
+            article_id=a.id, category="direct", reason="Same claim"
+        ) for a in evidence.articles
+    ]
+    assert summarization.validate_sources(briefing, evidence) is briefing
+
+
+@pytest.mark.parametrize("gap", [" A separate fictional event. ", "\n\n"])
+def test_separate_claim_or_paragraph_does_not_inherit_evidence(response_data, gap):
+    part = response_data["output"][1]["content"][0]
+    part["text"] += gap
+    start = len(part["text"])
+    part["text"] += "[2]"
+    part["annotations"].append({
+        "type": "url_citation", "url": "https://example.com/metadata",
+        "start_index": start, "end_index": len(part["text"]),
+    })
+    now = datetime.now(timezone.utc)
+    evidence = discovery.extract_discovery(Mock(model_dump=lambda: response_data), SAMPLE[0], now, now)
+    first, second = evidence.articles
+    assert first.evidence_text.startswith("Fictional test event")
+    assert second.evidence_text == gap.strip()
+    assert second.content_status == ("search_evidence" if gap.strip() else "metadata_only")

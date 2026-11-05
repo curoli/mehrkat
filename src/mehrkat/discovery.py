@@ -5,7 +5,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from .models import Discovery, Evidence, Listing
 
-VERSION = "discovery-v1"
+VERSION = "discovery-v2"
 LIMITATIONS = [
     "Search coverage is not exhaustive. Only search-grounded evidence is evaluated, not full articles.",
     "Publication dates are unknown/unverified; results are not guaranteed to fall inside the requested window.",
@@ -53,14 +53,22 @@ def extract_discovery(response, listing: Listing, start: datetime, end: datetime
                 text = part.get("text", "")
                 annotations = [a for a in part.get("annotations", []) if a.get("type") == "url_citation"]
                 previous_end = 0
+                previous_claim = ""
                 for a in sorted(annotations, key=lambda a: a.get("start_index", 0)):
                     # This is a model-written search claim, not quoted article text.
                     position = a.get("start_index", 0)
                     paragraph = text.rfind("\n\n", 0, position)
                     span_start = max(previous_end, paragraph + 2 if paragraph >= 0 else 0)
-                    claim = text[span_start:position].strip()[-1800:]
+                    gap = text[previous_end:position]
+                    if previous_end and not gap.strip() and paragraph < previous_end:
+                        # Consecutive citations support the same claim, including
+                        # whitespace-separated citations within one paragraph.
+                        claim = previous_claim
+                    else:
+                        claim = text[span_start:position].strip()[-1800:]
                     add(a.get("url"), a.get("title"), claim)
                     previous_end = a.get("end_index", position)
+                    previous_claim = claim
     if not searched:
         raise ValueError("The model did not perform web search; no current-news result can be shown.")
     articles = [Evidence(
