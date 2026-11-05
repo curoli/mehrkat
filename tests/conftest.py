@@ -83,3 +83,25 @@ def no_article_network(monkeypatch):
     monkeypatch.setattr(ArticleRetriever, "get", lambda self, url: ArticleText(
         note="Fixture retrieval unavailable", retrieved_at=datetime(2026, 1, 1, tzinfo=timezone.utc)
     ))
+
+
+@pytest.fixture(autouse=True)
+def block_outbound_connections(monkeypatch):
+    import socket
+
+    original_connect = socket.socket.connect
+    original_connect_ex = socket.socket.connect_ex
+
+    def connect(sock, address):
+        if sock.family in {socket.AF_INET, socket.AF_INET6}:
+            raise AssertionError("Tests must mock network access; real connections are disabled.")
+        return original_connect(sock, address)
+
+    def connect_ex(sock, address):
+        if sock.family in {socket.AF_INET, socket.AF_INET6}:
+            raise AssertionError("Tests must mock network access; real connections are disabled.")
+        return original_connect_ex(sock, address)
+
+    # Leave local Unix socket pairs available for TestClient's event loop.
+    monkeypatch.setattr(socket.socket, "connect", connect)
+    monkeypatch.setattr(socket.socket, "connect_ex", connect_ex)

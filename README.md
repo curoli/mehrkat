@@ -42,7 +42,7 @@ pytest -q
 ## More information
 
 [Architecture](docs/ARCHITECTURE.md) · [Data sources](docs/DATA_SOURCES.md) ·
-[Testing](docs/TESTING.md) · [Design decisions](docs/DESIGN_DECISIONS.md) ·
+[Testing](docs/TESTING.md) · [AI evaluation](docs/AI_EVALUATION.md) · [Design decisions](docs/DESIGN_DECISIONS.md) ·
 [Limitations](docs/LIMITATIONS.md) · [AI assistance](docs/AI_ASSISTANCE.md)
 
 Code is [MIT licensed](LICENSE); third-party data and news retain their own terms.
