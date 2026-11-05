@@ -41,3 +41,13 @@ def test_credentials_not_cached(settings, client):
     settings.api_key = "fixture-secret-do-not-store"
     NewsService(settings, client).run(SAMPLE[0], 48)
     assert b"fixture-secret-do-not-store" not in settings.cache_path.read_bytes()
+
+
+def test_summary_schema_version_change_reuses_discovery(settings, client, monkeypatch):
+    service = NewsService(settings, client)
+    service.run(SAMPLE[0], 48)
+    monkeypatch.setattr("mehrkat.summarization.VERSION", "fixture-new-schema-version")
+    result = service.run(SAMPLE[0], 48)
+    assert result.discovery_cached and not result.summary_cached
+    assert client.responses.create.call_count == 1
+    assert client.responses.parse.call_count == 2

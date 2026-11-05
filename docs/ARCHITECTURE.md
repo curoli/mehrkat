@@ -202,3 +202,24 @@ Corroborating relevant sources may share a development; irrelevant or uncertain
 sources are not cited to inflate the count. The UI shows sources evaluated versus
 sources cited, including zero-citation outcomes. These are candidate sources, not
 a guarantee of 20 eligible recent articles, exhaustive coverage, or 20 citations.
+
+## Required source assessments
+
+The provider's summary schema is specialized to the evidence set: relevance is an
+object with each exact source ID as a required key, and extra keys are forbidden.
+Each value contains only category and reason. A plain array schema could not
+guarantee that every input ID appeared exactly once; with larger evidence sets,
+a schema-valid list could omit or repeat IDs and then fail application validation.
+
+The official SDK's parsed object is converted back into the existing public
+StockBriefing.relevance list, in input-source order. Public APIs and cache formats
+remain unchanged. Citation IDs, source text/relevance suitability and insufficient-
+news consistency are still validated in Python. Metadata-only and irrelevant
+sources must also have assessments; they are not omitted just because they are
+not cited. This enforces output structure, not factual accuracy.
+
+The normal summary remains one tool-free call. Its output allowance is 5,000
+tokens plus 120 per source (up to 9,800 with the configured 40-source cap), providing
+room for complete assessments as well as the briefing. Refusals, truncation and
+invalid citations still fail transparently. The summary schema/prompt version
+changes its cache key without invalidating discovery or article caches.
