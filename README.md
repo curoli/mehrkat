@@ -1,4 +1,4 @@
-# mehrkat
+# <img src="src/mehrkat/static/mehrkat.svg" alt="" width="56" height="56"> mehrkat
 
 AI-powered stock news summaries. Find a company or ticker, select a listing,
 optionally filter by exchange, country or sector, then generate a cited news briefing.
