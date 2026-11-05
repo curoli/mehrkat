@@ -120,9 +120,11 @@ def create_app(settings=None, client=None):
             "Discovery model": settings.discovery_model, "Summary model": settings.summary_model,
             "Default lookback (hours)": settings.lookback_hours,
             "Discovery TTL (seconds)": settings.discovery_ttl,
+            "Maximum candidate sources": settings.max_articles,
+            "Maximum discovery search passes": settings.discovery_search_passes,
             "Article text TTL (seconds)": settings.article_ttl,
             "Directory": directory.status,
-        }, note="Configure OPENAI_API_KEY, OPENAI_DISCOVERY_MODEL, OPENAI_SUMMARY_MODEL, NEWS_LOOKBACK_HOURS, DISCOVERY_CACHE_TTL_SECONDS, ARTICLE_CACHE_TTL_SECONDS, LISTINGS_PATH and CACHE_PATH in the environment or .env, then restart.")
+        }, note="Configure OPENAI_API_KEY, OPENAI_DISCOVERY_MODEL, OPENAI_SUMMARY_MODEL, NEWS_LOOKBACK_HOURS, DISCOVERY_CACHE_TTL_SECONDS, ARTICLE_CACHE_TTL_SECONDS, NEWS_MAX_ARTICLES, DISCOVERY_SEARCH_PASSES, LISTINGS_PATH and CACHE_PATH in the environment or .env, then restart.")
 
     @app.get("/monitoring", response_class=HTMLResponse)
     def monitoring(request: Request):

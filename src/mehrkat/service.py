@@ -40,7 +40,11 @@ class NewsService:
             if self.client is None:
                 self.client = OpenAI(api_key=self.settings.api_key, timeout=60, max_retries=1)
             now = datetime.now(timezone.utc)
-            key = "discovery:" + content_key([listing.model_dump(), hours, discovery.VERSION, self.settings.discovery_model, "medium", 2])
+            key = "discovery:" + content_key([
+                listing.model_dump(), hours, discovery.VERSION, self.settings.discovery_model,
+                discovery.SEARCH_CONTEXT_SIZE, discovery.MAX_TOOL_CALLS, discovery.MAX_OUTPUT_TOKENS,
+                self.settings.max_articles, self.settings.discovery_search_passes,
+            ])
             self.phase = "searching"
             saved = self.cache.get(key)
             discovery_hit = saved is not None
@@ -48,7 +52,9 @@ class NewsService:
             if saved:
                 evidence = Discovery.model_validate(saved)
             else:
-                evidence = discovery.discover(self.client, self.settings.discovery_model, listing, now - timedelta(hours=hours), now)
+                evidence = discovery.discover(self.client, self.settings.discovery_model, listing, now - timedelta(hours=hours), now,
+                                              max_articles=self.settings.max_articles,
+                                              search_passes=self.settings.discovery_search_passes)
                 self.cache.put(key, evidence.model_dump(mode="json"), self.settings.discovery_ttl)
                 self.metrics["last_successful_refresh"] = now.isoformat()
             self.phase = "retrieving"

@@ -46,7 +46,8 @@ Live verification results are recorded below when performed.
   graphical browser session.
 
 To repeat the explicit billable smoke check after resolving access:
-`python scripts/smoke.py`. It performs at most one request per stage with retries
+`python scripts/smoke.py`. It explicitly limits discovery to one pass and
+performs at most one request per stage with retries
 disabled, or uses cached results; it prints counts/cache flags, never keys or
 provider payloads.
 
@@ -162,4 +163,24 @@ JavaScript regression checks and syntax/diff checks passed.
 A headless Chrome smoke check against rendered fictional fixture content verified
 popup opening, one-at-a-time behavior, Escape, Close, outside-click dismissal, and
 fit within a 390-pixel mobile viewport. No live article or OpenAI requests were made.
+The existing TestClient deprecation warning remains.
+
+## Broader discovery verification
+
+Dedicated multi-response mocks verify complementary query focuses, preservation
+of more than four distinct articles, canonical URL deduplication and merged
+evidence, metadata-to-citation upgrades, citation-backed prioritization, source
+caps, early stopping, bounded pass counts, honest scarce-result handling,
+transparent search errors, environment bounds, and cache invalidation when
+discovery budgets change. Older workflow fixtures explicitly use one pass to
+isolate their existing cache/relevance/error contracts; runtime defaults are
+tested separately.
+
+The explicit live smoke script still uses only one discovery pass plus one
+summary request, with retries disabled, regardless of normal application settings.
+All 134 Python tests and the JavaScript regression checks passed, along with
+syntax, dependency consistency and diff checks. One bounded live discovery call
+(one pass, retries disabled) returned seven distinct citation-backed candidate
+sources. That check did not download article pages or generate a briefing.
+The full multi-pass workflow and final summary quality were not live-verified.
 The existing TestClient deprecation warning remains.

@@ -15,6 +15,8 @@ class Settings:
     lookback_hours: int = 48
     discovery_ttl: int = 900
     article_ttl: int = 86400
+    max_articles: int = 20
+    discovery_search_passes: int = 3
     listings_path: Path = ROOT / "data/listings.csv"
     cache_path: Path = ROOT / ".cache/mehrkat.sqlite"
 
@@ -28,6 +30,8 @@ class Settings:
             lookback_hours=max(1, min(168, int(os.getenv("NEWS_LOOKBACK_HOURS", "48")))),
             discovery_ttl=max(1, int(os.getenv("DISCOVERY_CACHE_TTL_SECONDS", "900"))),
             article_ttl=max(1, int(os.getenv("ARTICLE_CACHE_TTL_SECONDS", "86400"))),
+            max_articles=max(1, min(40, int(os.getenv("NEWS_MAX_ARTICLES", "20")))),
+            discovery_search_passes=max(1, min(4, int(os.getenv("DISCOVERY_SEARCH_PASSES", "3")))),
             listings_path=Path(os.getenv("LISTINGS_PATH", str(ROOT / "data/listings.csv"))),
             cache_path=Path(os.getenv("CACHE_PATH", str(ROOT / ".cache/mehrkat.sqlite"))),
         )

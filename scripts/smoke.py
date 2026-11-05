@@ -6,7 +6,9 @@ from mehrkat.listings import SAMPLE
 def main():
     app = create_app()
     service = app.state.service
-    # No retries in this bounded verification: at most one request per stage.
+    # Keep verification to one discovery request plus one summary request,
+    # even when the application's normal discovery uses multiple passes.
+    service.settings.discovery_search_passes = 1
     from openai import OpenAI
     if not service.settings.api_key:
         print("Live smoke skipped: OPENAI_API_KEY is not configured.")
