@@ -32,3 +32,12 @@ button.source-help{display:inline-flex;align-items:center;justify-content:center
 
 .brand-logo{display:block;flex-shrink:0;width:56px;height:56px}
 @media(max-width:900px){.brand-tagline{display:none}}
+
+.summary-progress{display:flex;align-items:center;gap:10px;margin:1em 0}
+.summary-progress p{margin:0;min-width:0}
+.busy-dots:not([hidden]){display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
+.busy-dots span{width:6px;height:6px;border-radius:50%;background:#17664f;opacity:.25;animation:busy-dot 1.2s ease-in-out infinite}
+.busy-dots span:nth-child(2){animation-delay:.18s}
+.busy-dots span:nth-child(3){animation-delay:.36s}
+@keyframes busy-dot{0%,70%,100%{opacity:.25}35%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.busy-dots span{animation:none;opacity:1}}

@@ -94,7 +94,7 @@ Optional JavaScript regression tests use Node.js 20+ with its built-in test
 runner and DOM/fetch stubs (no npm dependencies):
 
 ```sh
-node --test tests/js/search.test.cjs
+node --test tests/js/*.test.cjs
 ```
 
 These verify filter-only search, repeated filter parameters in listing links,
@@ -205,3 +205,17 @@ of the original failed model response or independent verification of its facts.
 After this fix, all 147 Python tests and the JavaScript regression checks passed.
 No graphical browser verification was performed; the UI and public response
 shape are unchanged. The existing TestClient deprecation warning remains.
+
+## Briefing progress animation
+
+The JavaScript progress tests hold the summary request open to check that the
+indicator stays active through searching/retrieval/summarization, stops on success
+or HTTP/network failure, clears polling, and restores retry controls after failure.
+They also verify that a late poll cannot replace the final error message.
+
+All 147 Python tests and both JavaScript test files passed. A headless Chrome
+check of rendered local fixture HTML verified hidden idle/completion states,
+animated staggered opacity, placement next to the message at 390px, and steady
+dots when prefers-reduced-motion is enabled. The dots are decorative and hidden
+from assistive technology; the text retains role=status. No live article or
+OpenAI requests were made. Existing TestClient deprecation warning remains.

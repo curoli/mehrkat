@@ -85,7 +85,7 @@ test("changing and clearing filters refreshes results and URL without losing que
 
 test("briefing redirect preserves repeated filters and excludes listing key", async () => {
   const form = new Element({dataset: {key: "XETRA::SAP"}});
-  const elements = {"#summary-form": form, "#generate": new Element(), "#summary-status": new Element(), "#hours": {value: "48"}};
+  const elements = {"#summary-form": form, "#generate": new Element(), "#summary-status": new Element(), "#summary-busy": new Element(), "#hours": {value: "48"}};
   let redirect;
   vm.runInNewContext(code, {
     URLSearchParams, setInterval: () => 1, clearInterval: () => {},
