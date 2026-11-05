@@ -1,3 +1,5 @@
 .env
 .env.*
 !.env.example
+finanzen_net_technical_task.md
+mehrkat_codex_instructions.md
