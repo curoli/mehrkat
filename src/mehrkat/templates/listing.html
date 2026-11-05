@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block content %}
+<a href="/">← Choose another listing</a>
+<p class="eyebrow">{{ listing.exchange }} · {{ listing.ticker }}</p><h1>{{ listing.name }}</h1>
+<dl>{% for label, value in [("Country", listing.country), ("Asset type", listing.asset_type), ("Sector", listing.sector), ("Aliases", listing.aliases|join(", ")), ("ISIN", listing.isin)] %}
+<dt>{{ label }}</dt><dd>{{ value or "Not available" }}</dd>{% endfor %}</dl>
+<form id="summary-form" data-key="{{ listing.listing_key }}">
+<label for="hours">Requested news window</label>
+<select id="hours"><option value="{{ lookback }}">{{ lookback }} hours (default)</option><option value="24">24 hours</option><option value="168">7 days</option></select>
+<button id="generate" type="submit">Find &amp; summarize news</button>
+</form><p id="summary-status" role="status">Ready. Generation uses your OpenAI account; cached results are reused.</p>
+<p class="muted">Search may take a minute or two. Coverage and publication dates may be incomplete.</p>
+{% endblock %}

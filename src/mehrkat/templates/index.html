@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block content %}
+<p class="eyebrow">YOUR NEXT MARKET BRIEFING</p>
+<h1>Follow the company.<br>Understand the news.</h1>
+<p>Choose a stock listing to find recent developments and generate a briefing with sources.</p>
+<label for="search">Company, ticker, or alias</label>
+<input id="search" type="search" placeholder="Search company, ticker, or alias…" autocomplete="off" autofocus aria-describedby="directory">
+<p id="directory" class="muted">{{ directory_status }}</p>
+<ul id="matches" aria-label="Matching listings"></ul>
+<p id="search-status" role="status">Try Apple, MSFT, or SAP. Select the exchange you want.</p>
+<p class="muted">Search is local. OpenAI is called only when you click “Find &amp; summarize news”.</p>
+{% endblock %}
