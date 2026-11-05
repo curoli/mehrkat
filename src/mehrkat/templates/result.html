@@ -1,5 +1,5 @@
 {% extends "base.html" %}{% block content %}
-<a href="/">← Search another listing</a>
+<a href="{{ search_url }}">← Search another listing</a>
 <p class="eyebrow">{{ result.listing.exchange }} · {{ result.listing.ticker }}</p>
 <h1>{{ result.listing.name }} briefing</h1>
 <p class="muted">Requested UTC window: {{ result.discovery.window_start.isoformat() }} to {{ result.discovery.window_end.isoformat() }}<br>
