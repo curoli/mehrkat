@@ -11,6 +11,13 @@ if (search) {
   let timer, sequence = 0;
   const filters = document.querySelector("#filters");
   const checkboxes = [...filters.querySelectorAll('input[type="checkbox"]')];
+  const updateFilterControls = () => {
+    for (const name of filterNames) {
+      const count = checkboxes.filter(checkbox => checkbox.name === name && checkbox.checked).length;
+      document.querySelector("#count-" + name).textContent = count + " selected";
+      document.querySelector("#reset-" + name).disabled = count === 0;
+    }
+  };
   const updateMatches = async () => {
     const current = ++sequence;
     const query = search.value;
@@ -54,10 +61,20 @@ if (search) {
     }
   };
   const scheduleUpdate = () => {
+    updateFilterControls();
     clearTimeout(timer);
     ++sequence;
     timer = setTimeout(updateMatches, 180);
   };
+  for (const name of filterNames) {
+    document.querySelector("#reset-" + name).addEventListener("click", () => {
+      for (const checkbox of checkboxes) {
+        if (checkbox.name === name) checkbox.checked = false;
+      }
+      scheduleUpdate();
+    });
+  }
+  updateFilterControls();
   search.addEventListener("input", scheduleUpdate);
   filters.addEventListener("change", scheduleUpdate);
   document.querySelector("#clear-filters").addEventListener("click", () => {

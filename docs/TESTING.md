@@ -126,3 +126,11 @@ are not reused after the cache version change.
 After the robots parser fix, all 104 Python tests, the JavaScript regression
 checks and dependency consistency check passed using Protego 0.7.0. No live
 retrieval, paid API call or graphical browser check was performed for this fix.
+
+Filter-control tests verify server-rendered zero/restored counts and disabled
+reset buttons, including duplicate and normalized URL values. JavaScript tests
+verify immediate count updates before debounced requests, per-group reset
+isolation, preserved query/other filters, refreshed results and listing URLs,
+and all-group reset state. All 106 Python tests, the JavaScript regression
+checks, syntax and diff checks passed for this change. No API calls or graphical
+browser checks were performed.
