@@ -6,14 +6,16 @@ from openai import OpenAI
 
 from . import discovery, summarization
 from .cache import Cache, content_key
+from .articles import ArticleRetriever
 from .models import Discovery, StockBriefing, SummaryResult
 
 
 class NewsService:
-    def __init__(self, settings, client=None):
+    def __init__(self, settings, client=None, articles=None):
         self.settings = settings
         self.client = client
         self.cache = Cache(settings.cache_path)
+        self.articles = articles or ArticleRetriever(self.cache, settings.article_ttl)
         self.lock = Lock()
         self.metrics = dict(requests=0, discovery_hits=0, discovery_misses=0,
                             summary_hits=0, summary_misses=0, failures=0,
@@ -43,6 +45,8 @@ class NewsService:
                 evidence = discovery.discover(self.client, self.settings.discovery_model, listing, now - timedelta(hours=hours), now)
                 self.cache.put(key, evidence.model_dump(mode="json"), self.settings.discovery_ttl)
                 self.metrics["last_successful_refresh"] = now.isoformat()
+            self.phase = "retrieving"
+            evidence = self.articles.enrich(evidence)
             self.phase = "summarizing"
             skey = "summary:" + content_key([listing.model_dump(), evidence.model_dump(mode="json"), self.settings.summary_model, summarization.VERSION])
             saved = self.cache.get(skey)

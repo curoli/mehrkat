@@ -62,6 +62,29 @@ def test_concurrent_request_is_bounded(settings, client):
         application.state.service.lock.release()
 
 
+def test_article_coverage_shown_without_returning_bodies(settings, client, monkeypatch):
+    from datetime import datetime, timezone
+    from mehrkat.articles import ArticleRetriever, ArticleText
+    article_body = "Publisher article body for internal analysis only. " * 10
+    monkeypatch.setattr(ArticleRetriever, "get", lambda self, url: ArticleText(
+        text=article_body, status="article_text", note="Extracted article text; completeness unverified.",
+        retrieved_at=datetime.now(timezone.utc), final_url=url,
+    ))
+    application = create_app(settings, client)
+    app = TestClient(application)
+    response = app.post("/api/summary?key=NASDAQ:AAPL")
+    assert response.status_code == 200
+    source = response.json()["discovery"]["articles"][0]
+    assert source["content_status"] == "article_text"
+    assert "evidence_text" not in source and "search_evidence_text" not in source
+    assert article_body not in response.text
+    page = app.get("/result").text
+    assert "Extracted article text (completeness unverified)" in page
+    assert article_body not in page
+    assert article_body not in app.get("/debug").text
+    assert article_body in client.responses.parse.call_args.kwargs["input"]
+
+
 def test_listing_filters_and_navigation(settings, client):
     from html.parser import HTMLParser
     from urllib.parse import parse_qs, urlsplit
@@ -146,3 +169,30 @@ def test_normalized_filters_survive_return_navigation(settings, client, exchange
     assert app.post("/api/summary", params={"key": "NASDAQ:AAPL"}).status_code == 200
     result = app.get("/result", params=params)
     check_restored_page(app.get(SearchPage(result.text).return_link))
+
+
+def test_result_coverage_totals_and_no_duplicate_model_caveats(settings, client, briefing):
+    duplicate = "Coverage warning shown once."
+    application = create_app(settings, client)
+    app = TestClient(application)
+    response = app.post("/api/summary?key=NASDAQ:AAPL")
+    assert response.status_code == 200
+    assert response.json()["coverage"] == {
+        "evaluated_sources": 2, "used_articles": 1, "full_text_articles": 0,
+        "excerpt_articles": 0, "search_summary_articles": 1,
+    }
+    result = application.state.service.last_result
+    result.discovery.limitations = [duplicate, " coverage warning shown once "]
+    result.briefing.limitations = [duplicate, "Model-specific caveat"]
+    html = app.get("/result").text
+    assert html.count(duplicate) == 1
+    assert "Articles used: 1" in html
+    assert "Full text extracted: 0" in html
+    assert "Search summaries: 1" in html
+    assert "completeness is unverified" in html
+    assert "Model-specific caveat" not in html
+    assert "Model-specific caveat" in app.get("/debug").text
+    # Cached responses still compute the same statistics.
+    repeated = app.post("/api/summary?key=NASDAQ:AAPL")
+    assert repeated.json()["summary_cached"]
+    assert repeated.json()["coverage"] == response.json()["coverage"]

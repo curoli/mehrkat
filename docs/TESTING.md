@@ -56,6 +56,31 @@ or a blank paragraph prevents evidence inheritance, and that all supporting IDs
 pass summary validation. The full 39-test suite, including API integration tests,
 passed outside the sandbox after this fix.
 
+## Article retrieval tests
+
+The original workflow fixtures stub ArticleRetriever.get to a deterministic
+unavailable result; they never access publisher URLs. Retrieval tests use fake
+HTTP responses/sockets and invented article HTML. One extraction test runs the
+real Trafilatura parser against that local fixture.
+
+Coverage includes canonical URL cache reuse across instances and discovery
+refreshes, expiry, shorter failure caching and recovery, search fallback,
+summary input/hash changes, metadata-only sources, extraction/truncation budgets,
+robots disallow/error/pacing handling, restricted content, private-IP and mixed
+DNS blocking, redirect target checks, TLS hostname preservation with IP pinning,
+download/compression limits, and omission of article bodies from browser/API/debug
+responses. No paid API calls are used by these tests.
+
+Article-text implementation verification: 77 Python tests passed on Python 3.13.
+JavaScript syntax and dependency consistency checks passed. A live, key-free
+retrieval of an Apple Newsroom earnings release extracted 2,785 characters;
+a repeated lookup used the local URL cache (one fetch total). This verifies an
+actual download/extraction/cache path, not complete article coverage or summary
+quality. No paid OpenAI request was made for this change, and no graphical browser
+verification was performed. The existing Starlette/httpx deprecation warning
+remains.
+
+
 ## Listing filter verification
 
 Python tests cover multiple values, intersection across groups, filters without
@@ -79,3 +104,25 @@ Filter restoration regressions also exercise lowercase and whitespace-padded
 exchange/country/sector parameters on initial load and after listing/briefing
 return navigation. The canonical checked values must produce exactly the same
 API results as the original normalized request.
+
+Coverage-statistic regressions check unique cited-source counts across repeated
+citations and developments, mixed text/excerpt/search coverage, uncited sources,
+zero-use insufficient-news results, normalized warning deduplication, API/HTML
+statistics and cached responses. The combined branch also runs all restored
+filter navigation tests, including normalization on return links.
+
+Combined filter/coverage verification: all 91 Python tests passed, including
+API integration tests outside the sandbox. The Node.js search regression file,
+JavaScript syntax and diff checks passed. No paid calls or graphical browser
+checks were made for the coverage changes.
+
+Robots parser regressions cover wildcard disallows, longest-match precedence
+regardless of directive order, longer allow exceptions, equal-length allow ties,
+end anchors and pacing directives. Retrieval-level tests prove both reported
+disallow cases fetch only robots.txt, never the article, and retain search
+evidence. A cache regression checks that entries obtained using the old parser
+are not reused after the cache version change.
+
+After the robots parser fix, all 104 Python tests, the JavaScript regression
+checks and dependency consistency check passed using Protego 0.7.0. No live
+retrieval, paid API call or graphical browser check was performed for this fix.

@@ -10,6 +10,11 @@
   Prompts and schemas are versioned explicitly.
 - Exact listing keys preserve venue identity; company metadata supplies news
   context without excluding international sector events.
+- Public article text is attempted after discovery with Trafilatura. A URL cache
+  allows reuse across discovery refreshes and listings; failures preserve cited
+  search findings. Extraction is labelled as completeness unverified, and long
+  text is labelled as an excerpt. We do not interpret successful HTML download
+  as proof of complete article access.
 - Publication dates remain null/unverified because this version has no independent
   publication-date extractor. Model claims about dates are not metadata verification.
 - No force-refresh control: TTL gives a predictable default cost boundary.
