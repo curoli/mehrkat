@@ -49,13 +49,26 @@ class Directory:
             except (ValueError, KeyError, OSError):
                 self.status += "; import unavailable or invalid"
         self.by_key = {row.listing_key: row for row in self.rows}
+        self.filter_options = {
+            field: sorted({getattr(row, field) for row in self.rows if getattr(row, field).strip()},
+                          key=str.casefold)
+            for field in ("exchange", "country", "sector")
+        }
 
-    def search(self, query: str) -> list[Listing]:
+    def search(self, query: str, exchanges: list[str] | None = None,
+               countries: list[str] | None = None, sectors: list[str] | None = None) -> list[Listing]:
         q = normalize(query)
-        if not q:
+        filters = {
+            field: {normalize(value) for value in values or [] if normalize(value)}
+            for field, values in (("exchange", exchanges), ("country", countries), ("sector", sectors))
+        }
+        if not q and not any(filters.values()):
             return []
         matches = []
         for row in self.rows:
+            if any(values and normalize(getattr(row, field)) not in values
+                   for field, values in filters.items()):
+                continue
             fields = [normalize(row.name), *(normalize(a) for a in row.aliases)]
             ticker = normalize(row.ticker)
             rank = 0 if ticker == q else 1 if any(f.startswith(q) for f in fields) else 2

@@ -4,6 +4,21 @@
 <p>Choose a stock listing to find recent developments and generate a briefing with sources.</p>
 <label for="search">Company, ticker, or alias</label>
 <input id="search" type="search" placeholder="Search company, ticker, or alias…" autocomplete="off" autofocus aria-describedby="directory">
+<fieldset id="filters">
+<legend>Optional filters</legend>
+<p class="muted" id="filter-help">Choose any number in each group. Matches must satisfy every selected group. Leave a group empty to include all values.</p>
+<div class="filter-groups">
+{% for field, options in filter_options.items() %}
+<details class="filter-group"><summary>{{ {"exchange": "Exchanges", "country": "Countries", "sector": "Sectors"}[field] }}</summary>
+<div class="filter-options">
+{% for value in options %}
+<label><input type="checkbox" name="{{ field }}" value="{{ value }}"{% if value in selected_filters[field] %} checked{% endif %}> {{ value }}</label>
+{% endfor %}
+</div></details>
+{% endfor %}
+</div>
+<button id="clear-filters" type="button" class="secondary">Clear filters</button>
+</fieldset>
 <p id="directory" class="muted">{{ directory_status }}</p>
 <div class="listings-scroll">
 <table id="listings" hidden aria-label="Matching listings">
@@ -11,6 +26,6 @@
 <tbody id="matches"></tbody>
 </table>
 </div>
-<p id="search-status" role="status">Try Apple, MSFT, or SAP. Select the exchange you want.</p>
+<p id="search-status" role="status">Try Apple, MSFT, or SAP, or choose filters to browse. Select a listing to continue.</p>
 <p class="muted">Search is local. OpenAI is called only when you click “Find &amp; summarize news”.</p>
 {% endblock %}

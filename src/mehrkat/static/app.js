@@ -1,15 +1,28 @@
+const filterNames = ["exchange", "country", "sector"];
+function savedSearchParams() {
+  const params = new URLSearchParams();
+  for (const [name, value] of new URLSearchParams(window.location.search)) {
+    if (name === "q" || filterNames.includes(name)) params.append(name, value);
+  }
+  return params;
+}
 const search = document.querySelector("#search");
 if (search) {
   let timer, sequence = 0;
+  const filters = document.querySelector("#filters");
+  const checkboxes = [...filters.querySelectorAll('input[type="checkbox"]')];
   const updateMatches = async () => {
     const current = ++sequence;
     const query = search.value;
-    const url = new URL(window.location.href);
-    if (query) url.searchParams.set("q", query);
-    else url.searchParams.delete("q");
-    window.history.replaceState(null, "", url);
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    for (const checkbox of checkboxes) {
+      if (checkbox.checked) params.append(checkbox.name, checkbox.value);
+    }
+    const suffix = params.toString() ? "?" + params : "";
+    window.history.replaceState(null, "", "/" + suffix);
     try {
-      const response = await fetch("/api/listings?q=" + encodeURIComponent(query));
+      const response = await fetch("/api/listings" + suffix);
       if (!response.ok) throw new Error("Search failed. Please retry.");
       const listings = await response.json();
       if (current !== sequence) return;
@@ -20,7 +33,9 @@ if (search) {
         const tr = document.createElement("tr");
         const company = document.createElement("td");
         const link = document.createElement("a");
-        link.href = "/listing?" + new URLSearchParams({key: row.listing_key, q: query});
+        const listingParams = new URLSearchParams(params);
+        listingParams.set("key", row.listing_key);
+        link.href = "/listing?" + listingParams;
         link.textContent = row.name;
         company.append(link);
         tr.append(company);
@@ -38,13 +53,19 @@ if (search) {
       document.querySelector("#search-status").textContent = error.message;
     }
   };
-  search.addEventListener("input", () => {
+  const scheduleUpdate = () => {
     clearTimeout(timer);
     ++sequence;
     timer = setTimeout(updateMatches, 180);
+  };
+  search.addEventListener("input", scheduleUpdate);
+  filters.addEventListener("change", scheduleUpdate);
+  document.querySelector("#clear-filters").addEventListener("click", () => {
+    for (const checkbox of checkboxes) checkbox.checked = false;
+    scheduleUpdate();
   });
   search.value = new URLSearchParams(window.location.search).get("q") || "";
-  if (search.value) updateMatches();
+  if (search.value || checkboxes.some(checkbox => checkbox.checked)) updateMatches();
 }
 const form = document.querySelector("#summary-form");
 if (form) {
@@ -69,8 +90,8 @@ if (form) {
         const data = await response.json();
         throw new Error(typeof data.detail === "string" ? data.detail : "Request failed. Please retry.");
       }
-      const query = new URLSearchParams(window.location.search).get("q");
-      window.location.assign(query ? "/result?" + new URLSearchParams({q: query}) : "/result");
+      const params = savedSearchParams();
+      window.location.assign(params.toString() ? "/result?" + params : "/result");
     } catch (error) {
       status.textContent = error.message;
       button.disabled = false;

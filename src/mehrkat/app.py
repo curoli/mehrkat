@@ -26,10 +26,14 @@ def create_app(settings=None, client=None):
     templates = Jinja2Templates(directory=HERE / "templates")
 
     def page(request, name, **context):
-        query = request.query_params.get("q", "")
+        search_params = [(key, value) for key, value in request.query_params.multi_items()
+                         if key in {"q", "exchange", "country", "sector"} and value]
+        selected_filters = {field: request.query_params.getlist(field)
+                            for field in directory.filter_options}
         return templates.TemplateResponse(request=request, name=name, context={
             "directory_status": directory.status, "lookback": settings.lookback_hours,
-            "search_url": "/?" + urlencode({"q": query}) if query else "/", **context,
+            "filter_options": directory.filter_options, "selected_filters": selected_filters,
+            "search_url": "/?" + urlencode(search_params) if search_params else "/", **context,
         })
 
     def lookup(key):
@@ -43,8 +47,11 @@ def create_app(settings=None, client=None):
         return page(request, "index.html")
 
     @app.get("/api/listings", response_model=list[Listing])
-    def search(q: Annotated[str, Query(max_length=200)] = ""):
-        return directory.search(q)
+    def search(q: Annotated[str, Query(max_length=200)] = "",
+               exchange: Annotated[list[str] | None, Query()] = None,
+               country: Annotated[list[str] | None, Query()] = None,
+               sector: Annotated[list[str] | None, Query()] = None):
+        return directory.search(q, exchange, country, sector)
 
     @app.get("/listing", response_class=HTMLResponse)
     def listing(request: Request, key: str):

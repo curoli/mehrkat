@@ -1,7 +1,7 @@
 # mehrkat
 
 AI-powered stock news summaries. Find a company or ticker, select a listing,
-then generate a cited news briefing.
+optionally filter by exchange, country or sector, then generate a cited news briefing.
 
 ## Run locally
 
