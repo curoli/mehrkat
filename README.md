@@ -35,6 +35,8 @@ review [data terms](docs/DATA_SOURCES.md) first.
 
 ## Test
 
+See the [testing strategy](docs/TESTING.md) for test coverage, CI checks, and AI evaluation guidance.
+
 ```sh
 pytest -q
 ```
