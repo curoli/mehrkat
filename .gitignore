@@ -3,3 +3,12 @@
 !.env.example
 finanzen_net_technical_task.md
 mehrkat_codex_instructions.md
+.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+*.sqlite*
+.cache/
+data/
+build/
+dist/

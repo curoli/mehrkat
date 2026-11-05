@@ -1,3 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
 [project]
 name = "mehrkat"
+version = "0.1.0"
+description = "Cited stock news briefings"
+requires-python = ">=3.11"
 license = "MIT"
+dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "jinja2>=3.1.6,<4", "openai>=2,<3", "python-dotenv>=1,<2", "pydantic>=2.10,<3"]
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "httpx>=0.28,<1"]
+[tool.setuptools.package-data]
+mehrkat = ["templates/*.html", "static/*"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
