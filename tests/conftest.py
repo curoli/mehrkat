@@ -57,7 +57,21 @@ def briefing(evidence):
 def client(response_data, briefing):
     client = Mock()
     client.responses.create.return_value = Mock(model_dump=lambda: response_data)
-    client.responses.parse.return_value = SimpleNamespace(status="completed", output_parsed=briefing)
+    template_response = SimpleNamespace(status="completed", output_parsed=briefing)
+    client.responses.parse.return_value = template_response
+
+    def parse(**kwargs):
+        if template_response.output_parsed is None:
+            return template_response
+        payload = template_response.output_parsed.model_dump()
+        payload["relevance"] = {
+            decision["article_id"]: {key: decision[key] for key in ("category", "reason")}
+            for decision in payload["relevance"]
+        }
+        return SimpleNamespace(status=template_response.status,
+                               output_parsed=kwargs["text_format"].model_validate(payload))
+
+    client.responses.parse.side_effect = parse
     return client
 
 

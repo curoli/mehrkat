@@ -184,3 +184,24 @@ syntax, dependency consistency and diff checks. One bounded live discovery call
 sources. That check did not download article pages or generate a briefing.
 The full multi-pass workflow and final summary quality were not live-verified.
 The existing TestClient deprecation warning remains.
+
+## Complete source-assessment regression
+
+The Alphabet failure had 14 distinct cached source IDs; the invalid model response
+was not retained, so its exact omission/duplication could not be reconstructed.
+Synthetic cases with 14, 20 and 40 sources verify required provider-schema keys,
+complete conversion to the public decision list, single tool-free summary calls
+and scaled output budgets. Missing/unknown keys, duplicate input IDs and invalid
+citations remain rejected. The official OpenAI SDK is also tested against an
+httpx MockTransport to verify strict schema serialization and parsing. Changing
+the schema version reruns summarization while reusing discovery.
+
+One live, summary-only request against the 14 cached Alphabet search-evidence
+records succeeded with 14 unique relevance assessments and five developments.
+It used no discovery or article retrieval and did not persist a new briefing.
+This validates the corrected schema with that source cardinality, not a replay
+of the original failed model response or independent verification of its facts.
+
+After this fix, all 147 Python tests and the JavaScript regression checks passed.
+No graphical browser verification was performed; the UI and public response
+shape are unchanged. The existing TestClient deprecation warning remains.
