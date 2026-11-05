@@ -9,12 +9,16 @@
 <p class="muted" id="filter-help">Choose any number in each group. Matches must satisfy every selected group. Leave a group empty to include all values.</p>
 <div class="filter-groups">
 {% for field, options in filter_options.items() %}
-<details class="filter-group"><summary>{{ {"exchange": "Exchanges", "country": "Countries", "sector": "Sectors"}[field] }}</summary>
+{% set label = {"exchange": "Exchanges", "country": "Countries", "sector": "Sectors"}[field] %}
+<div class="filter-group">
+<details><summary>{{ label }} <span class="filter-count" id="count-{{ field }}" aria-live="polite">{{ selected_filters[field]|length }} selected</span></summary>
 <div class="filter-options">
 {% for value in options %}
 <label><input type="checkbox" name="{{ field }}" value="{{ value }}"{% if value in selected_filters[field] %} checked{% endif %}> {{ value }}</label>
 {% endfor %}
 </div></details>
+<button id="reset-{{ field }}" type="button" class="secondary filter-reset"{% if not selected_filters[field] %} disabled{% endif %}>Reset {{ label|lower }}</button>
+</div>
 {% endfor %}
 </div>
 <button id="clear-filters" type="button" class="secondary">Clear filters</button>

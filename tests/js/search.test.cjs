@@ -20,9 +20,14 @@ function searchPage(queryString) {
     new Element({name: "exchange", value: "NYSE", checked: true}),
     new Element({name: "exchange", value: "XETRA", checked: true}),
     new Element({name: "country", value: "Germany", checked: true}),
+    new Element({name: "sector", value: "Technology", checked: false}),
   ];
   const elements = Object.fromEntries(["search", "filters", "matches", "listings", "search-status", "clear-filters"]
     .map(id => ["#" + id, new Element()]));
+  for (const name of ["exchange", "country", "sector"]) {
+    elements["#count-" + name] = new Element();
+    elements["#reset-" + name] = new Element();
+  }
   elements["#filters"].querySelectorAll = () => checkboxes;
   let scheduled;
   const calls = [];
@@ -72,6 +77,10 @@ test("changing and clearing filters refreshes results and URL without losing que
   assert.equal(page.context.window.location.searchParams.get("q"), "SAP & alias");
   assert.equal(page.context.window.location.searchParams.has("exchange"), false);
   assert.equal(page.context.window.location.searchParams.has("country"), false);
+  for (const name of ["exchange", "country", "sector"]) {
+    assert.equal(page.elements["#count-" + name].textContent, "0 selected");
+    assert.equal(page.elements["#reset-" + name].disabled, true);
+  }
 });
 
 test("briefing redirect preserves repeated filters and excludes listing key", async () => {
@@ -94,3 +103,49 @@ test("briefing redirect preserves repeated filters and excludes listing key", as
   assert.equal(redirect.searchParams.get("sector"), "Technology");
   assert.equal(redirect.searchParams.has("key"), false);
 });
+
+
+test("counts update immediately on initialization and checkbox changes", async () => {
+  const page = searchPage("q=SAP");
+  await settle();
+  assert.equal(page.elements["#count-exchange"].textContent, "2 selected");
+  assert.equal(page.elements["#count-country"].textContent, "1 selected");
+  assert.equal(page.elements["#count-sector"].textContent, "0 selected");
+  assert.equal(page.elements["#reset-sector"].disabled, true);
+  const requests = page.calls.length;
+  page.checkboxes[3].checked = true;
+  page.elements["#filters"].listeners.change();
+  assert.equal(page.calls.length, requests); // Update controls before the debounced search.
+  assert.equal(page.elements["#count-sector"].textContent, "1 selected");
+  assert.equal(page.elements["#reset-sector"].disabled, false);
+  page.checkboxes[3].checked = false;
+  page.elements["#filters"].listeners.change();
+  assert.equal(page.elements["#count-sector"].textContent, "0 selected");
+  assert.equal(page.elements["#reset-sector"].disabled, true);
+});
+
+for (const name of ["exchange", "country", "sector"]) {
+  test("reset only " + name + " while preserving the query and other groups", async () => {
+    const page = searchPage("q=SAP+%26+alias");
+    await settle();
+    page.checkboxes[3].checked = true;
+    page.elements["#filters"].listeners.change();
+    await page.runScheduled();
+    page.elements["#reset-" + name].listeners.click();
+    assert.equal(page.elements["#count-" + name].textContent, "0 selected");
+    assert.equal(page.elements["#reset-" + name].disabled, true);
+    assert.ok(page.checkboxes.filter(c => c.name !== name).every(c => c.checked));
+    await page.runScheduled();
+    const params = page.context.window.location.searchParams;
+    const submitted = new URL(page.calls.at(-1), "http://localhost").searchParams;
+    assert.equal(params.get("q"), "SAP & alias");
+    assert.equal(params.has(name), false);
+    assert.equal(submitted.toString(), params.toString());
+    for (const other of ["exchange", "country", "sector"].filter(group => group !== name)) {
+      assert.equal(params.has(other), true);
+    }
+    const link = new URL(page.elements["#matches"].children[0].children[0].children[0].href, "http://localhost");
+    assert.equal(link.searchParams.has(name), false);
+    assert.equal(link.searchParams.get("q"), "SAP & alias");
+  });
+}

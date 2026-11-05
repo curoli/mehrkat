@@ -196,3 +196,48 @@ def test_result_coverage_totals_and_no_duplicate_model_caveats(settings, client,
     repeated = app.post("/api/summary?key=NASDAQ:AAPL")
     assert repeated.json()["summary_cached"]
     assert repeated.json()["coverage"] == response.json()["coverage"]
+
+
+@pytest.mark.parametrize("params,expected", [
+    ([], {"exchange": 0, "country": 0, "sector": 0}),
+    ([("q", "SAP"), ("exchange", "nyse"), ("exchange", " NYSE "),
+      ("exchange", "XETRA"), ("country", " germany "), ("sector", "Technology")],
+     {"exchange": 2, "country": 1, "sector": 1}),
+])
+def test_filter_counts_and_reset_controls_are_rendered(settings, client, params, expected):
+    from html.parser import HTMLParser
+
+    class Controls(HTMLParser):
+        def __init__(self, text):
+            super().__init__()
+            self.counts = {}
+            self.buttons = {}
+            self.current_count = None
+            self.feed(text)
+
+        def handle_starttag(self, tag, attributes):
+            attrs = dict(attributes)
+            if tag == "span" and attrs.get("id", "").startswith("count-"):
+                self.current_count = attrs["id"]
+            if tag == "button" and attrs.get("id", "").startswith("reset-"):
+                self.buttons[attrs["id"]] = attrs
+
+        def handle_data(self, text):
+            if self.current_count:
+                self.counts[self.current_count] = text
+
+        def handle_endtag(self, tag):
+            if tag == "span":
+                self.current_count = None
+
+    app = TestClient(create_app(settings, client))
+    response = app.get("/", params=params)
+    assert response.status_code == 200
+    controls = Controls(response.text)
+    for name, count in expected.items():
+        assert controls.counts["count-" + name] == f"{count} selected"
+        button = controls.buttons["reset-" + name]
+        assert button["type"] == "button"
+        assert ("disabled" in button) is (count == 0)
+    client.responses.create.assert_not_called()
+    client.responses.parse.assert_not_called()

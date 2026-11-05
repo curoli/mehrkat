@@ -119,3 +119,10 @@ The application still handles robots HTTP failures and redirects conservatively
 and skips publishers requiring request pacing. The article cache version changes
 with this parser correction so entries obtained under the earlier parser are
 not reused.
+
+Each filter summary shows its selected-option count, including while collapsed.
+Counts and reset-button availability are rendered from normalized selections and
+updated immediately on checkbox changes. Each group has its own reset button,
+visible even while collapsed; it clears only that group and refreshes results
+while preserving the text query and other groups. The existing Clear filters
+button still clears all groups. Empty groups show zero and disable their reset.
