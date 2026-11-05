@@ -99,3 +99,50 @@ def test_listing_filters_and_navigation(settings, client):
     assert app.post("/api/summary", params={"key": "NASDAQ:AAPL"}).status_code == 200
     result = app.get("/result", params=params)
     assert return_link in PageParser(result.text).links
+
+
+@pytest.mark.parametrize("exchanges", [["nyse"], [" nyse ", "xEtRa"]])
+def test_normalized_filters_survive_return_navigation(settings, client, exchanges):
+    from html.parser import HTMLParser
+
+    class SearchPage(HTMLParser):
+        def __init__(self, text):
+            super().__init__()
+            self.checked = []
+            self.return_link = None
+            self.feed(text)
+
+        def handle_starttag(self, tag, attributes):
+            attrs = dict(attributes)
+            if tag == "input" and "checked" in attrs:
+                self.checked.append((attrs["name"], attrs["value"]))
+            if tag == "a" and attrs.get("href", "").startswith("/?"):
+                self.return_link = attrs["href"]
+
+    app = TestClient(create_app(settings, client))
+    params = [("q", "SAP"), *[("exchange", value) for value in exchanges],
+              ("country", " gErMaNy "), ("sector", " TECHNOLOGY ")]
+    expected = {value.strip().upper() for value in exchanges}
+    original = app.get("/api/listings", params=params).json()
+    assert {row["exchange"] for row in original} == expected
+
+    def check_restored_page(response):
+        assert response.status_code == 200
+        page = SearchPage(response.text)
+        assert set(page.checked) == {
+            *[("exchange", value) for value in expected],
+            ("country", "Germany"), ("sector", "Technology"),
+        }
+        # JavaScript submits the canonical values from checked checkboxes.
+        restored = app.get("/api/listings", params=[("q", "SAP"), *page.checked]).json()
+        assert restored == original
+
+    check_restored_page(app.get("/", params=params))
+    listing = app.get("/listing", params=[("key", "NYSE:SAP"), *params])
+    check_restored_page(app.get(SearchPage(listing.text).return_link))
+    client.responses.create.assert_not_called()
+    client.responses.parse.assert_not_called()
+
+    assert app.post("/api/summary", params={"key": "NASDAQ:AAPL"}).status_code == 200
+    result = app.get("/result", params=params)
+    check_restored_page(app.get(SearchPage(result.text).return_link))

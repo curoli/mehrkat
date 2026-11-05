@@ -74,3 +74,8 @@ node --test tests/js/search.test.cjs
 These verify filter-only search, repeated filter parameters in listing links,
 filter changes/clearing, query restoration and briefing redirects. They do not
 replace a graphical browser check.
+
+Filter restoration regressions also exercise lowercase and whitespace-padded
+exchange/country/sector parameters on initial load and after listing/briefing
+return navigation. The canonical checked values must produce exactly the same
+API results as the original normalized request.

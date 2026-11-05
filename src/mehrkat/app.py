@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from openai import APIConnectionError, APIStatusError, APITimeoutError
 
 from .config import Settings
-from .listings import Directory
+from .listings import Directory, normalize
 from .models import Listing, SummaryResult
 from .service import NewsService
 
@@ -28,8 +28,12 @@ def create_app(settings=None, client=None):
     def page(request, name, **context):
         search_params = [(key, value) for key, value in request.query_params.multi_items()
                          if key in {"q", "exchange", "country", "sector"} and value]
-        selected_filters = {field: request.query_params.getlist(field)
-                            for field in directory.filter_options}
+        selected_filters = {}
+        for field, options in directory.filter_options.items():
+            requested = {normalize(value) for value in request.query_params.getlist(field)}
+            # Restore canonical checkbox values using the same matching rules
+            # as directory filtering, including case and whitespace tolerance.
+            selected_filters[field] = [value for value in options if normalize(value) in requested]
         return templates.TemplateResponse(request=request, name=name, context={
             "directory_status": directory.status, "lookback": settings.lookback_hours,
             "filter_options": directory.filter_options, "selected_filters": selected_filters,
