@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">A cheerful meerkat</title>
+  <rect width="64" height="64" rx="16" fill="#17664f"/>
+  <!-- Upright shoulders and a light chest keep the silhouette recognizable. -->
+  <path d="M15 64v-7c0-11 7-19 17-19s17 8 17 19v7" fill="#c99a64"/>
+  <path d="M24 64v-9c0-6 3-10 8-10s8 4 8 10v9" fill="#f2dab2"/>
+  <circle cx="16" cy="21" r="7" fill="#c99a64"/>
+  <circle cx="48" cy="21" r="7" fill="#c99a64"/>
+  <circle cx="16" cy="21" r="4" fill="#74513a"/>
+  <circle cx="48" cy="21" r="4" fill="#74513a"/>
+  <path d="M12 28c0-12 8-19 20-19s20 7 20 19c0 14-10 22-20 22S12 42 12 28" fill="#dfb77f"/>
+  <!-- Dark eye patches are the meerkat's defining facial feature. -->
+  <ellipse cx="23" cy="28" rx="6" ry="8" transform="rotate(22 23 28)" fill="#74513a"/>
+  <ellipse cx="41" cy="28" rx="6" ry="8" transform="rotate(-22 41 28)" fill="#74513a"/>
+  <circle cx="24" cy="27" r="2.8" fill="#1f302d"/>
+  <circle cx="40" cy="27" r="2.8" fill="#1f302d"/>
+  <circle cx="24.8" cy="26" r="1" fill="#fff"/>
+  <circle cx="40.8" cy="26" r="1" fill="#fff"/>
+  <ellipse cx="32" cy="38" rx="10" ry="8" fill="#f2dab2"/>
+  <path d="M28 35q4-3 8 0-1 5-4 5t-4-5" fill="#1f302d"/>
+  <path d="M32 39v2m0 0q-3 3-6 0m6 0q3 3 6 0" fill="none" stroke="#74513a" stroke-width="1.8" stroke-linecap="round"/>
+</svg>
