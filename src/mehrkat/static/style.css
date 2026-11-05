@@ -5,3 +5,12 @@ nav{display:flex;gap:20px;font-size:14px}main{max-width:850px;margin:60px auto;p
 input,select,button{font:inherit;padding:15px;border-radius:8px;border:1px solid #91aaa1}input{width:100%;margin-top:8px;background:white;font-size:19px}label{display:block;font-weight:600}button{background:#17664f;color:white;cursor:pointer;font-weight:600}button:disabled{opacity:.6;cursor:wait}
 select{margin:8px 12px 8px 0}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #dc981c;outline-offset:3px}
 .muted,footer{color:#586c68;font-size:14px}.listings-scroll{overflow-x:auto;margin:16px 0}#listings{width:100%;border-collapse:collapse;background:#fff;text-align:left}#listings th,#listings td{padding:12px;border-bottom:1px solid #d9e1d9;vertical-align:top}#listings th{font-size:14px}#matches a{display:block;font-weight:600;min-width:160px}#matches td{overflow-wrap:anywhere}#matches tr:hover{background:#edf3ee}dl{display:grid;grid-template-columns:180px 1fr;gap:8px 16px}dt{font-weight:650}dd{margin:0;overflow-wrap:anywhere}article,aside{border-top:1px solid #d9e1d9;padding:20px 0}.sources{font-size:14px;padding-left:20px}.sources a{font-weight:600}footer{padding:24px;text-align:center}@media(max-width:600px){header{display:block}nav{margin-top:16px;gap:14px}main{margin-top:35px}dl{grid-template-columns:1fr;gap:2px}dd{margin-bottom:12px}button{width:100%}}
+#filters{border:1px solid #d9e1d9;border-radius:8px;margin:20px 0;padding:16px}
+#filters legend{font-weight:650}#filters p{margin-top:0}
+.filter-groups{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.filter-group{flex:1;min-width:180px;background:white;border:1px solid #d9e1d9;border-radius:6px;padding:10px}
+.filter-group summary{cursor:pointer;font-weight:600}
+.filter-options{max-height:220px;overflow-y:auto;margin-top:10px}
+.filter-options label{font-weight:400;display:flex;align-items:baseline;gap:8px;font-size:14px;padding:4px}
+.filter-options input{width:auto;margin:0;flex-shrink:0}
+button.secondary{background:white;color:#126755;padding:8px 14px;font-size:14px}

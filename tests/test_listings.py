@@ -43,3 +43,45 @@ def test_aliases_do_not_evaluate_code():
     assert parse_aliases("one|two") == ["one", "two"]
     with pytest.raises(ValueError):
         parse_aliases('[{"not": "a string"}]')
+
+
+def test_filters_allow_multiple_values_and_combine_groups(settings):
+    directory = Directory(settings.listings_path)
+    assert {r.exchange for r in directory.search("SAP", exchanges=["NYSE", "XETRA"])} == {"NYSE", "XETRA"}
+    assert [r.exchange for r in directory.search("SAP", exchanges=["NYSE"], countries=["Germany"])] == ["NYSE"]
+    assert directory.search("SAP", exchanges=["NYSE"], countries=["United States"]) == []
+    assert {r.country for r in directory.search("", countries=["Germany", "United States"])} == {"Germany", "United States"}
+    assert directory.search("", sectors=["Healthcare"]) == []
+    assert directory.search("SAP", exchanges=["unknown"]) == []
+
+
+def test_filters_normalize_and_leave_empty_groups_unrestricted(settings):
+    directory = Directory(settings.listings_path)
+    rows = directory.search("", exchanges=[" xetra ", "XETRA"], countries=[" GERMANY "], sectors=[" technology "])
+    assert [r.listing_key for r in rows] == ["XETRA:SAP"]
+    assert len(directory.search("SAP", exchanges=[], countries=[" "])) == 2
+    assert directory.search("", exchanges=[" "]) == []
+
+
+def test_filter_before_result_cap_and_missing_metadata(settings):
+    from mehrkat.models import Listing
+    directory = Directory(settings.listings_path)
+    directory.rows = [
+        Listing(listing_key=f"X:{i}", ticker=f"A{i}", exchange="X", name=f"Company {i:02}",
+                country="First" if i < 30 else "Second", sector="Energy" if i >= 30 else "")
+        for i in range(35)
+    ]
+    assert len(directory.search("Company")) == 25
+    rows = directory.search("Company", countries=["Second"], sectors=["Energy", "Healthcare"])
+    assert len(rows) == 5
+    assert all(row.country == "Second" for row in rows)
+    assert directory.search("Company", countries=["First"], sectors=["Energy"]) == []
+
+
+def test_filter_options_come_from_directory(settings):
+    directory = Directory(settings.listings_path)
+    assert directory.filter_options == {
+        "exchange": ["NASDAQ", "NYSE", "XETRA"],
+        "country": ["Germany", "United States"],
+        "sector": ["Technology"],
+    }

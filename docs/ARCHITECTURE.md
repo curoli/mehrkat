@@ -47,3 +47,20 @@ concurrent paid workflows. Status polling remains responsive. Multiple workers
 would need distributed deduplication, per-user result IDs, shared cache/metrics,
 authentication, rate limits and spending controls. Queues/jobs and streaming
 could support longer research later; they are unnecessary for this exercise.
+
+## Optional listing filters
+
+The search page offers checkbox groups for exchanges, countries and sectors,
+populated from the directory loaded at startup. Empty groups impose no restriction.
+Multiple selections within a group are alternatives (OR); selected groups must
+all match (AND). Matching ignores case and extra whitespace. A text query can be
+combined with filters, or filters alone can browse listings. With neither text nor
+filters, results stay empty. Filtering happens before ranking and the 25-row cap.
+Missing metadata does not match a selected value.
+
+GET /api/listings accepts repeated exchange, country and sector parameters, e.g.
+`/api/listings?q=SAP&exchange=NYSE&exchange=XETRA&country=Germany`.
+Filter values and the text query travel in URLs through listing and briefing
+navigation, so return links restore the search. Clear filters retains the text
+query. These are local directory filters only; they do not restrict news sources
+or change the selected company's summarization context.
