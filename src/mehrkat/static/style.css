@@ -18,3 +18,8 @@ button.secondary{background:white;color:#126755;padding:8px 14px;font-size:14px}
 .filter-count{display:inline-block;margin-left:6px;font-size:12px;font-weight:400;color:#586c68}
 button.filter-reset{margin-top:10px}
 button.filter-reset:disabled{cursor:default}
+
+.source-list{border-top:1px solid #d9e1d9;padding-top:20px}
+.source-list ul{padding-left:20px}.source-list li{margin-bottom:18px}
+.source-url{display:block;overflow-wrap:anywhere}
+.evidence-text{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;background:white;padding:20px;border:1px solid #d9e1d9;border-radius:8px}

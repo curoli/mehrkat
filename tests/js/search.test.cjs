@@ -94,10 +94,11 @@ test("briefing redirect preserves repeated filters and excludes listing key", as
       search: "?key=XETRA%3A%3ASAP&q=SAP&exchange=NYSE&exchange=XETRA&country=Germany&sector=Technology",
       assign: url => { redirect = new URL(url, "http://localhost"); },
     }},
-    fetch: async () => ({ok: true}),
+    fetch: async () => ({ok: true, json: async () => ({result_id: "briefing-snapshot"})}),
   });
   await form.listeners.submit({preventDefault() {}});
   assert.equal(redirect.pathname, "/result");
+  assert.equal(redirect.searchParams.get("briefing"), "briefing-snapshot");
   assert.deepEqual(redirect.searchParams.getAll("exchange"), ["NYSE", "XETRA"]);
   assert.equal(redirect.searchParams.get("country"), "Germany");
   assert.equal(redirect.searchParams.get("sector"), "Technology");

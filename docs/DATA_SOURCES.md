@@ -63,3 +63,9 @@ Extraction uses [Trafilatura](https://trafilatura.readthedocs.io/en/latest/coref
 Text, including cached text, may still be incomplete or erroneous. Long articles
 are explicitly truncated; PDFs, JavaScript-rendered pages, unsupported compression,
 and blocked/unavailable URLs fall back to search evidence. Raw HTML is discarded.
+
+The explicit View text used action displays cached evidence locally with publisher
+links and coverage labels. Per-briefing snapshots preserve the exact input, including
+truncation and fallback context, for at most 24 hours (or the shorter configured
+article TTL). They contain no raw publisher HTML. This inspection feature does not
+grant redistribution rights or imply complete article coverage.

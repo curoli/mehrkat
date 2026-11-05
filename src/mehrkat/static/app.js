@@ -108,7 +108,9 @@ if (form) {
         const data = await response.json();
         throw new Error(typeof data.detail === "string" ? data.detail : "Request failed. Please retry.");
       }
+      const result = await response.json();
       const params = savedSearchParams();
+      params.set("briefing", result.result_id);
       window.location.assign(params.toString() ? "/result?" + params : "/result");
     } catch (error) {
       status.textContent = error.message;

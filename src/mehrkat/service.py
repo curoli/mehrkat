@@ -23,6 +23,12 @@ class NewsService:
         self.last_result = None
         self.phase = "idle"
 
+    def get_result(self, result_id):
+        if len(result_id) != 64 or any(character not in "0123456789abcdef" for character in result_id):
+            return None
+        saved = self.cache.get("result:" + result_id)
+        return SummaryResult.model_validate(saved) if saved is not None else None
+
     def run(self, listing, hours):
         if not self.lock.acquire(blocking=False):
             raise RuntimeError("Another briefing is running. Please wait and retry.")
@@ -59,8 +65,13 @@ class NewsService:
                 briefing = summarization.summarize(self.client, self.settings.summary_model, listing, evidence)
                 generated = datetime.now(timezone.utc)
                 self.cache.put(skey, {"briefing": briefing.model_dump(mode="json"), "generated_at": generated.isoformat()}, 86400)
-            result = SummaryResult(listing=listing, discovery=evidence, briefing=briefing, generated_at=generated,
+            result_id = content_key([skey, generated.isoformat()])
+            result = SummaryResult(result_id=result_id, listing=listing, discovery=evidence, briefing=briefing, generated_at=generated,
                                    discovery_cached=discovery_hit, summary_cached=summary_hit)
+            # Preserve the exact, budget-limited evidence supplied for this
+            # briefing. The URL cache may later contain different/newer text.
+            self.cache.put("result:" + result_id, result.model_dump(mode="json"),
+                           min(86400, self.settings.article_ttl))
             self.last_result = result
             return result
         except Exception:

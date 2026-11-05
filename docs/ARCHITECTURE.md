@@ -22,7 +22,9 @@ true. Extraction completeness is not independently established.
 - GET /: HTML search UI; GET /api/listings?q=: up to 25 typed listing results.
 - GET /listing?key=: exact upstream listing-key selection.
 - POST /api/summary?key=&hours=: typed listing, evidence, briefing, times and cache status.
-- GET /result: latest process-local result; GET /api/status: current phase.
+- GET /result?briefing=: a saved briefing snapshot (omitting the ID shows the latest process-local result).
+- GET /sources/{result_id}/{source_id}: exact cached evidence for a cited source.
+- GET /api/status: current phase.
 - GET /settings, /monitoring, /debug: separate ancillary views.
 - GET /health: process health, not an upstream availability check.
 
@@ -77,8 +79,9 @@ The application does not execute JavaScript.
 
 Trafilatura extracts article text, excluding comments. Publisher HTML and raw
 responses are not cached. Full bodies are excluded from the summary HTTP response,
-result HTML and debug page; the model and local SQLite cache receive the extracted
-text. UI/API metadata reports extraction status, retrieval time and fallback reason.
+briefing HTML and debug page by default; the model and local SQLite cache receive
+the extracted text. An explicit View text used action opens the cited source's
+cached evidence on a separate page. UI/API metadata reports extraction status, retrieval time and fallback reason.
 
 
 ## Optional listing filters
@@ -126,3 +129,31 @@ updated immediately on checkbox changes. Each group has its own reset button,
 visible even while collapsed; it clears only that group and refreshes results
 while preserving the text query and other groups. The existing Clear filters
 button still clears all groups. Empty groups show zero and disable their reset.
+
+## Source list and exact evidence snapshots
+
+The result page lists unique sources cited in developments, with titles, explicit
+original URLs, publisher links, coverage labels and View text used links.
+Uncited discovery candidates are excluded from this list.
+
+Successful workflows save a result snapshot containing the enriched, budget-limited
+evidence alongside the briefing. Its stable ID hashes the summary cache key and
+generation time. Repeated cached generations share an ID; different evidence gets a
+different ID. The browser navigates to that ID and carries search/filter state
+through source-view and return links, so another generation cannot replace the
+text under an existing link.
+
+Snapshots persist in SQLite for at most 24 hours, bounded by
+ARTICLE_CACHE_TTL_SECONDS if that is shorter. GET /sources reads only the named
+snapshot and checks that the source was cited. It never retrieves a URL or calls
+OpenAI, and returns 404 for missing/expired snapshots or uncited/unknown sources.
+Snapshots also work after an app restart without an API key. An expired view
+does not silently substitute newer article-cache text.
+
+The viewer autoescapes text, preserves paragraphs and whitespace, reports coverage
+and retrieval times, and distinguishes the primary evidence from generated search
+findings also supplied as context. These findings are not article text. Excerpts
+show the exact truncation supplied to the model, not a longer URL-cache version.
+Response Cache-Control: no-store prevents implicit browser retention of the text.
+The ordinary summary API, briefing page and Debug page still omit source bodies.
+This remains a local, single-user app; saved IDs are not authentication.

@@ -37,7 +37,8 @@ def create_app(settings=None, client=None):
         return templates.TemplateResponse(request=request, name=name, context={
             "directory_status": directory.status, "lookback": settings.lookback_hours,
             "filter_options": directory.filter_options, "selected_filters": selected_filters,
-            "search_url": "/?" + urlencode(search_params) if search_params else "/", **context,
+            "search_url": "/?" + urlencode(search_params) if search_params else "/",
+            "search_suffix": "?" + urlencode(search_params) if search_params else "", **context,
         })
 
     def lookup(key):
@@ -89,11 +90,24 @@ def create_app(settings=None, client=None):
             raise HTTPException(409, "Another briefing is running. Please wait and retry.") from None
 
     @app.get("/result", response_class=HTMLResponse)
-    def result(request: Request):
-        if service.last_result is None:
-            raise HTTPException(404, "No briefing generated yet.")
-        return page(request, "result.html", result=service.last_result,
-                    sources={a.id: a for a in service.last_result.discovery.articles})
+    def result(request: Request, briefing: str | None = None):
+        selected = service.get_result(briefing) if briefing is not None else service.last_result
+        if selected is None:
+            raise HTTPException(404, "Briefing unavailable or expired. Generate a new briefing from Search.")
+        return page(request, "result.html", result=selected,
+                    sources={a.id: a for a in selected.discovery.articles})
+
+    @app.get("/sources/{result_id}/{source_id}", response_class=HTMLResponse)
+    def source_text(request: Request, result_id: str, source_id: str):
+        selected = service.get_result(result_id)
+        if selected is None:
+            raise HTTPException(404, "Cached briefing unavailable or expired. Generate a new briefing from Search.")
+        source = next((article for article in selected.used_sources if article.id == source_id), None)
+        if source is None:
+            raise HTTPException(404, "Source was not cited in this briefing.")
+        response = page(request, "source.html", result=selected, source=source)
+        response.headers["Cache-Control"] = "no-store"
+        return response
 
     @app.get("/api/status")
     def status():

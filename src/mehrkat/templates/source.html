@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% block content %}
+<a href="/result?briefing={{ result.result_id }}{% if search_suffix %}&amp;{{ search_suffix[1:] }}{% endif %}">← Back to this briefing</a>
+<p class="eyebrow">{{ result.listing.name }} · {{ result.listing.exchange }} · {{ result.listing.ticker }}</p>
+<h1>{{ source.title or "Source text" }}</h1>
+<a class="source-url" href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.url }}</a>
+<h2>Text supplied for this source</h2>
+<p>{{ {"article_text": "Extracted article text; completeness unverified.", "excerpt": "Extracted excerpt; truncated before summarization.", "search_evidence": "Generated search findings used as fallback; not publisher article text.", "metadata_only": "Metadata only; no text available."}[source.content_status] }}</p>
+{% if source.retrieval_note %}<p>{{ source.retrieval_note }}</p>{% endif %}
+<p class="muted">Briefing generated: {{ result.generated_at.isoformat() }}<br>
+Evidence discovered: {{ source.retrieved_at.isoformat() }}
+{% if source.text_retrieved_at %}<br>Article text retrieval attempted: {{ source.text_retrieved_at.isoformat() }}{% endif %}<br>
+Publication date unknown/unverified.</p>
+<p>This is the cached evidence supplied for this briefing, including any truncation. Viewing it makes no new article or OpenAI request.</p>
+{% if source.evidence_text %}<pre class="evidence-text">{{ source.evidence_text }}</pre>
+{% else %}<p>No text was supplied for this source.</p>{% endif %}
+{% if source.search_evidence_text %}
+<details><summary>Search findings also supplied as context</summary>
+<p class="muted">Model-generated search findings, not publisher article text.</p>
+<pre class="evidence-text">{{ source.search_evidence_text }}</pre></details>
+{% endif %}
+{% endblock %}
